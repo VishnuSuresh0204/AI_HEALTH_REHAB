@@ -1,0 +1,57 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}View Exercises - AI Healthcare{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h2 style="margin: 0; color: var(--primary);">Manage Exercises</h2>
+    <a href="/admin_add_exercise" class="btn-action btn-approve" style="text-decoration: none;">+ Add Exercise</a>
+</div>
+
+<div style="overflow-x: auto;">
+    <table>
+        <thead>
+            <tr>
+                <th>Thumbnail</th>
+                <th>Name</th>
+                <th>Body Part</th>
+                <th>Target Angle</th>
+                <th>Reps / Sets</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ex in val %}
+            <tr>
+                <td>
+                    {% if ex.thumbnail %}
+                        <img src="{{ ex.thumbnail.url }}" alt="Thumbnail" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
+                    {% else %}
+                        <div style="width: 50px; height: 50px; border-radius: 8px; background: #e5e7eb; display: flex; align-items: center; justify-content: center;">N/A</div>
+                    {% endif %}
+                </td>
+                <td style="font-weight: 600;">{{ ex.name }}</td>
+                <td>{{ ex.body_part }}</td>
+                <td>{{ ex.target_angle_min }}&deg; - {{ ex.target_angle_max }}&deg;</td>
+                <td>{{ ex.default_reps }} / {{ ex.default_sets }}</td>
+                <td>
+                    {% if ex.is_active %}
+                        <span style="color: #10b981; font-weight: 600;">Active</span>
+                    {% else %}
+                        <span style="color: #ef4444; font-weight: 600;">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="/admin_edit_exercise?id={{ ex.id }}" class="btn-action btn-unblock">Edit</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-light); padding: 2rem;">No exercises found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
