@@ -108,6 +108,8 @@ def register_therapist(request):
  
 
  
+# ================= ADMIN VIEWS =================
+ 
 def admin_home(request):
     return render(request, "ADMIN/admin_home.html")
  
@@ -135,3 +137,49 @@ def admin_user_action(request):
     l.is_active = (act == "unblock")
     l.save()
     return redirect("/admin_view_users")
+ 
+def admin_view_exercises(request):
+    e = Exercise.objects.all()
+    return render(request, "ADMIN/view_exercises.html", {"val": e})
+ 
+def admin_add_exercise(request):
+    if request.method == "POST":
+        n = request.POST.get("name")
+        d = request.POST.get("description")
+        bp = request.POST.get("body_part")
+        amin = request.POST.get("target_angle_min")
+        amax = request.POST.get("target_angle_max")
+        reps = request.POST.get("default_reps") or 10
+        sets = request.POST.get("default_sets") or 3
+        vid = request.FILES.get("demo_video")
+        thumb = request.FILES.get("thumbnail")
+ 
+        Exercise.objects.create(
+            name=n, description=d, body_part=bp, target_angle_min=amin,
+            target_angle_max=amax, default_reps=reps, default_sets=sets,
+            demo_video=vid, thumbnail=thumb
+        )
+        messages.success(request, "Exercise added to library")
+        return redirect("/admin_view_exercises")
+    return render(request, "ADMIN/add_exercise.html")
+ 
+def admin_edit_exercise(request):
+    id = request.GET.get("id")
+    ex = Exercise.objects.get(id=id)
+    if request.method == "POST":
+        ex.name = request.POST.get("name")
+        ex.description = request.POST.get("description")
+        ex.body_part = request.POST.get("body_part")
+        ex.target_angle_min = request.POST.get("target_angle_min")
+        ex.target_angle_max = request.POST.get("target_angle_max")
+        ex.default_reps = request.POST.get("default_reps") or ex.default_reps
+        ex.default_sets = request.POST.get("default_sets") or ex.default_sets
+        ex.is_active = request.POST.get("is_active") == "on"
+        if request.FILES.get("demo_video"):
+            ex.demo_video = request.FILES.get("demo_video")
+        if request.FILES.get("thumbnail"):
+            ex.thumbnail = request.FILES.get("thumbnail")
+        ex.save()
+        messages.success(request, "Exercise updated")
+        return redirect("/admin_view_exercises")
+    return render(request, "ADMIN/edit_exercise.html", {"ex": ex})
