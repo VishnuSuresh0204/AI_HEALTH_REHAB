@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - AI Healthcare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        margin-bottom: 3rem;
+    }
+
+    .hero-section h1 {
+        font-size: 3.5rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .hero-section p {
+        font-size: 1.25rem;
+        color: var(--text-light);
+        max-width: 800px;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .feature-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 2rem;
+        border-radius: 12px;
+        text-align: center;
+        transition: transform 0.3s;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .feature-card h3 {
+        color: var(--text-main);
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .feature-card p {
+        color: var(--text-light);
+        line-height: 1.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1>Welcome to AI-Based Healthcare</h1>
+    <p>Revolutionizing patient care and therapy through artificial intelligence. Connect with top-tier therapists, track your progress, and receive personalized care recommendations based on cutting-edge AI technology.</p>
+    <div>
+        <a href="/register_user" class="btn-primary" style="font-size: 1.2rem; padding: 0.75rem 1.5rem; text-decoration: none; margin-right: 1rem;">Join as a Patient</a>
+        <a href="/login" style="font-size: 1.2rem; font-weight: 600; color: var(--text-main); text-decoration: underline;">Already have an account? Login</a>
+    </div>
+</div>
+
+<div class="features-grid">
+    <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>AI-Powered Insights</h3>
+        <p>Our intelligent system analyzes patient data to provide actionable insights and tailored therapy plans, ensuring you get the best possible care.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">👨‍⚕️</div>
+        <h3>Expert Therapists</h3>
+        <p>Connect with a wide network of licensed and experienced therapists specializing in various mental and physical health domains.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Secure & Confidential</h3>
+        <p>Your data privacy is our top priority. All communications and health records are encrypted and stored securely.</p>
+    </div>
+</div>
+{% endblock %}
