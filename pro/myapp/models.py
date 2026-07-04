@@ -126,3 +126,46 @@ class TherapistProfile(models.Model):
  
     def __str__(self):
         return self.name
+
+
+# ---------------- MEDICAL HISTORY ---------------- #
+ 
+class MedicalHistory(models.Model):
+    user = models.ForeignKey(
+        UserProfile,
+        on_delete=models.CASCADE,
+        related_name="medical_history"
+    )
+ 
+    condition = models.CharField(
+        max_length=255
+    )
+ 
+    description = models.TextField(
+        null=True,
+        blank=True
+    )
+ 
+    diagnosed_date = models.DateField(
+        null=True,
+        blank=True
+    )
+ 
+    injury_type = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True
+    )
+ 
+    notes = models.TextField(
+        null=True,
+        blank=True
+    )
+ 
+    created_date = models.DateTimeField(
+        auto_now_add=True
+    )
+ 
+    def __str__(self):
+        return f"{self.condition} - {self.user.name}"
+ 
