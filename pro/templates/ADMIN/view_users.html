@@ -1,0 +1,68 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}View Users - AI Healthcare{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h2 style="margin: 0; color: var(--primary);">Manage Patients / Users</h2>
+</div>
+
+<div style="overflow-x: auto;">
+    <table>
+        <thead>
+            <tr>
+                <th>Profile</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Gender</th>
+                <th>Assigned Therapist</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in val %}
+            <tr>
+                <td>
+                    {% if u.profile_pic %}
+                        <img src="{{ u.profile_pic.url }}" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                    {% else %}
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center;">U</div>
+                    {% endif %}
+                </td>
+                <td>{{ u.name }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.phone }}</td>
+                <td>{{ u.gender }}</td>
+                <td>
+                    {% if u.therapist %}
+                        {{ u.therapist.name }}
+                    {% else %}
+                        <span style="color: #9ca3af; font-style: italic;">None</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if u.loginid.is_active %}
+                        <span style="color: #10b981; font-weight: 600;">Active</span>
+                    {% else %}
+                        <span style="color: #ef4444; font-weight: 600;">Blocked</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if u.loginid.is_active %}
+                        <a href="/admin_user_action?id={{ u.id }}&act=block" class="btn-action btn-block">Block</a>
+                    {% else %}
+                        <a href="/admin_user_action?id={{ u.id }}&act=unblock" class="btn-action btn-unblock">Unblock</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-light); padding: 2rem;">No users found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
