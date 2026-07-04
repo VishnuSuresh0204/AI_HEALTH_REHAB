@@ -169,3 +169,114 @@ class MedicalHistory(models.Model):
     def __str__(self):
         return f"{self.condition} - {self.user.name}"
  
+
+ 
+# ---------------- EXERCISE (LIBRARY) ---------------- #
+ 
+class Exercise(models.Model):
+ 
+    BODY_PART_CHOICES = (
+        ("shoulder", "Shoulder"),
+        ("knee", "Knee"),
+        ("elbow", "Elbow"),
+        ("hip", "Hip"),
+        ("spine", "Spine"),
+        ("ankle", "Ankle"),
+        ("full_body", "Full Body"),
+    )
+ 
+    name = models.CharField(
+        max_length=150
+    )
+ 
+    description = models.TextField(
+        null=True,
+        blank=True
+    )
+ 
+    body_part = models.CharField(
+        max_length=20,
+        choices=BODY_PART_CHOICES
+    )
+ 
+    target_angle_min = models.FloatField()
+ 
+    target_angle_max = models.FloatField()
+ 
+    default_reps = models.IntegerField(
+        default=10
+    )
+ 
+    default_sets = models.IntegerField(
+        default=3
+    )
+ 
+    demo_video = models.FileField(
+        upload_to="exercise_demos/",
+        null=True,
+        blank=True
+    )
+ 
+    thumbnail = models.ImageField(
+        upload_to="exercise_thumbnails/",
+        null=True,
+        blank=True
+    )
+ 
+    is_active = models.BooleanField(
+        default=True
+    )
+ 
+    created_date = models.DateTimeField(
+        auto_now_add=True
+    )
+ 
+    def __str__(self):
+        return self.name
+ 
+ 
+# ---------------- EXERCISE PLAN ---------------- #
+ 
+class ExercisePlan(models.Model):
+    patient = models.ForeignKey(
+        UserProfile,
+        on_delete=models.CASCADE,
+        related_name="exercise_plans"
+    )
+ 
+    therapist = models.ForeignKey(
+        TherapistProfile,
+        on_delete=models.CASCADE,
+        related_name="created_plans"
+    )
+ 
+    title = models.CharField(
+        max_length=200
+    )
+ 
+    goal = models.TextField(
+        null=True,
+        blank=True
+    )
+ 
+    start_date = models.DateField(
+        null=True,
+        blank=True
+    )
+ 
+    end_date = models.DateField(
+        null=True,
+        blank=True
+    )
+ 
+    is_active = models.BooleanField(
+        default=True
+    )
+ 
+    created_date = models.DateTimeField(
+        auto_now_add=True
+    )
+ 
+    def __str__(self):
+        return f"{self.title} - {self.patient.name}"
+ 
