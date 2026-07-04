@@ -1,0 +1,57 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Admin Home - AI Healthcare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    .stat-card h3 {
+        margin: 0;
+        color: var(--text-light);
+        font-size: 1rem;
+    }
+    .stat-card .value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0.5rem 0 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h2>Admin Dashboard</h2>
+    <p>Welcome, Administrator</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Total Users</h3>
+        <p class="value">Manage</p>
+        <a href="/admin_view_users" style="color: var(--primary); text-decoration: none; margin-top: 1rem; display: inline-block;">View All &rarr;</a>
+    </div>
+    <div class="stat-card">
+        <h3>Therapists Pending</h3>
+        <p class="value">Review</p>
+        <a href="/admin_view_therapists" style="color: var(--primary); text-decoration: none; margin-top: 1rem; display: inline-block;">View All &rarr;</a>
+    </div>
+</div>
+{% endblock %}
