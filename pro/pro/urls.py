@@ -28,5 +28,11 @@ urlpatterns = [
  
     # ---------------- ADMIN ---------------- #
     path('admin_home/', views.admin_home),
-
+    path('admin_view_therapists/', views.admin_view_therapists),
+    path('admin_therapist_action/', views.admin_therapist_action),
+    path('admin_view_users/', views.admin_view_users),
+    path('admin_user_action/', views.admin_user_action),
+    path('admin_view_exercises/', views.admin_view_exercises),
+    path('admin_add_exercise/', views.admin_add_exercise),
+    path('admin_edit_exercise/', views.admin_edit_exercise),
 ]
