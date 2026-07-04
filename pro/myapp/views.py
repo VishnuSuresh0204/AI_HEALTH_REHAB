@@ -106,3 +106,32 @@ def register_therapist(request):
         return redirect("/login")
     return render(request, "therapist_register.html")
  
+
+ 
+def admin_home(request):
+    return render(request, "ADMIN/admin_home.html")
+ 
+def admin_view_therapists(request):
+    t = TherapistProfile.objects.all()
+    return render(request, "ADMIN/view_therapists.html", {"val": t})
+ 
+def admin_therapist_action(request):
+    id = request.GET.get("id")
+    act = request.GET.get("act")  # approved / rejected / blocked
+    t = TherapistProfile.objects.get(id=id)
+    t.status = act
+    t.save()
+    return redirect("/admin_view_therapists")
+ 
+def admin_view_users(request):
+    u = UserProfile.objects.all()
+    return render(request, "ADMIN/view_users.html", {"val": u})
+ 
+def admin_user_action(request):
+    id = request.GET.get("id")
+    act = request.GET.get("act")  # block / unblock
+    u = UserProfile.objects.get(id=id)
+    l = u.loginid
+    l.is_active = (act == "unblock")
+    l.save()
+    return redirect("/admin_view_users")
