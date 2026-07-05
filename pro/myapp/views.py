@@ -219,6 +219,62 @@ def therapist_view_patients(request):
     return render(request, "THERAPIST/view_patients.html", {"val": p, "stats": stats})
 
 
+def therapist_patient_detail(request):
+    id = request.GET.get("id")
+    p = UserProfile.objects.get(id=id)
+    plans = ExercisePlan.objects.filter(patient=p).order_by("-created_date")
+    history = MedicalHistory.objects.filter(user=p).order_by("-created_date")
+    return render(request, "THERAPIST/patient_detail.html", {"patient": p, "plans": plans, "history": history})
+ 
+def therapist_create_plan(request):
+    auth_check = require_login(request)
+    if auth_check: return auth_check
+ 
+    pid = request.GET.get("patient_id")
+    p = UserProfile.objects.get(id=pid)
+    t = TherapistProfile.objects.get(loginid_id=request.session["lid"])
+ 
+    if request.method == "POST":
+        title = request.POST.get("title")
+        goal = request.POST.get("goal")
+        sd = request.POST.get("start_date") or None
+        ed = request.POST.get("end_date") or None
+ 
+        plan = ExercisePlan.objects.create(patient=p, therapist=t, title=title, goal=goal, start_date=sd, end_date=ed)
+        messages.success(request, "Plan created. Now add exercises to it.")
+        return redirect(f"/therapist_edit_plan_items?id={plan.id}")
+    return render(request, "THERAPIST/create_plan.html", {"patient": p})
+ 
+def therapist_edit_plan_items(request):
+    id = request.GET.get("id")
+    plan = ExercisePlan.objects.get(id=id)
+ 
+    if request.method == "POST":
+        exid = request.POST.get("exercise_id")
+        ex = Exercise.objects.get(id=exid)
+        sets = request.POST.get("prescribed_sets") or 3
+        reps = request.POST.get("prescribed_reps") or 10
+        freq = request.POST.get("frequency_per_week") or 3
+        instr = request.POST.get("instructions")
+ 
+        ExercisePlanItem.objects.create(
+            plan=plan, exercise=ex, prescribed_sets=sets, prescribed_reps=reps,
+            frequency_per_week=freq, instructions=instr
+        )
+        messages.success(request, "Exercise added to plan")
+        return redirect(f"/therapist_edit_plan_items?id={plan.id}")
+ 
+    ex = Exercise.objects.filter(is_active=True)
+    return render(request, "THERAPIST/edit_plan_items.html", {"plan": plan, "items": plan.items.all(), "exercises": ex})
+ 
+def therapist_view_sessions(request):
+    auth_check = require_login(request)
+    if auth_check: return auth_check
+ 
+    t = TherapistProfile.objects.get(loginid_id=request.session["lid"])
+    s = ExerciseSession.objects.filter(plan_item__plan__therapist=t).order_by("-started_date")
+    return render(request, "THERAPIST/view_sessions.html", {"val": s})
+ 
 
 def user_home(request):
     return render(request, "USER/user_home.html")
