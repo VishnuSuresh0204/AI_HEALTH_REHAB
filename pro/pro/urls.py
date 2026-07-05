@@ -41,4 +41,9 @@ urlpatterns = [
     path('therapist_add_patient/', views.therapist_add_patient),
     path('therapist_view_patients/', views.therapist_view_patients),
     # path('therapist_patient_detail/', views.therapist_patient_detail),
+
+
+     path('user_home/', views.user_home),
+    path('user_view_plans/', views.user_view_plans),
+    path('user_medical_history/', views.user_medical_history),
 ]
