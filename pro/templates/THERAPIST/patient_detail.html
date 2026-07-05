@@ -1,0 +1,109 @@
+{% extends "THERAPIST/therapist_base.html" %}
+
+{% block title %}{{ patient.name }} – Patient Detail{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .info-card { background: #f9fafb; border-radius: 8px; padding: 1.5rem; }
+    .info-card h3 { margin: 0 0 1rem; font-size: 1rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; }
+    .info-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #e5e7eb; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-weight: 600; color: var(--text-light); }
+    .badge { padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+    .badge-active { background: #d1fae5; color: #065f46; }
+    .badge-inactive { background: #fee2e2; color: #991b1b; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin: 2rem 0 1rem; }
+    .section-header h2 { margin: 0; }
+    .plan-card { background: #f3f4f6; border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+    .plan-card h4 { margin: 0 0 0.25rem; }
+    .plan-card p { margin: 0; color: var(--text-light); font-size: 0.875rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+    <a href="/therapist_view_patients" style="color: var(--primary); text-decoration: none; font-weight: 600;">← Back to Patients</a>
+</div>
+
+<div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
+    {% if patient.profile_pic %}
+        <img src="{{ patient.profile_pic.url }}" alt="{{ patient.name }}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+    {% else %}
+        <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 700;">
+            {{ patient.name|first|upper }}
+        </div>
+    {% endif %}
+    <div>
+        <h2 style="margin: 0;">{{ patient.name }}</h2>
+        <p style="margin: 0.25rem 0 0; color: var(--text-light);">{{ patient.email }} &bull; {{ patient.phone }}</p>
+    </div>
+    <a href="/therapist_create_plan?patient_id={{ patient.id }}" class="btn-primary" style="margin-left: auto;">+ Create New Plan</a>
+</div>
+
+<div class="detail-grid">
+    <div class="info-card">
+        <h3>Personal Info</h3>
+        <div class="info-row"><span class="info-label">Gender</span><span>{{ patient.gender|default:"N/A" }}</span></div>
+        <div class="info-row"><span class="info-label">Date of Birth</span><span>{{ patient.dob|default:"N/A" }}</span></div>
+        <div class="info-row"><span class="info-label">Address</span><span>{{ patient.address|default:"N/A" }}</span></div>
+        <div class="info-row"><span class="info-label">Emergency Contact</span><span>{{ patient.emergency_contact|default:"N/A" }}</span></div>
+    </div>
+    <div class="info-card">
+        <h3>Physical Stats</h3>
+        <div class="info-row"><span class="info-label">Height</span><span>{% if patient.height_cm %}{{ patient.height_cm }} cm{% else %}N/A{% endif %}</span></div>
+        <div class="info-row"><span class="info-label">Weight</span><span>{% if patient.weight_kg %}{{ patient.weight_kg }} kg{% else %}N/A{% endif %}</span></div>
+    </div>
+</div>
+
+<!-- Exercise Plans -->
+<div class="section-header">
+    <h2>Exercise Plans</h2>
+    <span style="color: var(--text-light);">{{ plans.count }} plan(s)</span>
+</div>
+{% if plans %}
+    {% for plan in plans %}
+    <div class="plan-card">
+        <div>
+            <h4>{{ plan.title }} <span class="badge {% if plan.is_active %}badge-active{% else %}badge-inactive{% endif %}">{% if plan.is_active %}Active{% else %}Inactive{% endif %}</span></h4>
+            <p>{{ plan.start_date|default:"No start" }} → {{ plan.end_date|default:"No end" }} &bull; {{ plan.goal|truncatewords:12 }}</p>
+        </div>
+        <a href="/therapist_edit_plan_items?id={{ plan.id }}" class="btn-action btn-approve">Edit Plan</a>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="color: var(--text-light); font-style: italic;">No exercise plans yet.</p>
+{% endif %}
+
+<!-- Medical History -->
+<div class="section-header">
+    <h2>Medical History</h2>
+    <span style="color: var(--text-light);">{{ history.count }} record(s)</span>
+</div>
+{% if history %}
+<table>
+    <thead>
+        <tr>
+            <th>Condition</th>
+            <th>Injury Type</th>
+            <th>Diagnosed</th>
+            <th>Notes</th>
+            <th>Recorded</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for h in history %}
+        <tr>
+            <td>{{ h.condition }}</td>
+            <td>{{ h.injury_type|default:"N/A" }}</td>
+            <td>{{ h.diagnosed_date|default:"N/A" }}</td>
+            <td>{{ h.notes|default:"—"|truncatewords:10 }}</td>
+            <td>{{ h.created_date|date:"d M Y" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+    <p style="color: var(--text-light); font-style: italic;">No medical history recorded.</p>
+{% endif %}
+{% endblock %}
