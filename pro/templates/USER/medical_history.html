@@ -1,0 +1,91 @@
+{% extends "USER/user_base.html" %}
+
+{% block title %}Medical History – AI Healthcare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .full-span { grid-column: 1 / -1; }
+    .submit-btn {
+        background: var(--primary); color: white; border: none;
+        padding: 0.8rem 2rem; border-radius: 8px; font-size: 1rem;
+        font-weight: 700; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem;
+    }
+    .submit-btn:hover { background: var(--primary-hover); }
+    .section-divider { border: none; border-top: 2px solid #e5e7eb; margin: 2.5rem 0; }
+    .record-badge { padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; background: #dbeafe; color: #1e40af; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 style="margin: 0 0 0.5rem;">Medical History</h2>
+<p style="margin: 0 0 2rem; color: var(--text-light);">Log your conditions and injuries so your therapist can plan your rehabilitation effectively.</p>
+
+<!-- Add Record Form -->
+<h3 style="margin-bottom: 1rem;">+ Add New Record</h3>
+<form method="POST">
+    {% csrf_token %}
+    <div class="two-col">
+        <div class="form-group">
+            <label for="condition">Condition *</label>
+            <input type="text" id="condition" name="condition" class="form-control" placeholder="e.g. ACL Tear, Frozen Shoulder" required>
+        </div>
+        <div class="form-group">
+            <label for="injury-type">Injury Type</label>
+            <input type="text" id="injury-type" name="injury_type" class="form-control" placeholder="e.g. Ligament, Muscle, Bone">
+        </div>
+        <div class="form-group">
+            <label for="diagnosed-date">Diagnosed Date</label>
+            <input type="date" id="diagnosed-date" name="diagnosed_date" class="form-control">
+        </div>
+        <div class="form-group">
+            <!-- spacer -->
+        </div>
+        <div class="form-group full-span">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" class="form-control" placeholder="Briefly describe the condition..."></textarea>
+        </div>
+        <div class="form-group full-span">
+            <label for="notes">Additional Notes</label>
+            <textarea id="notes" name="notes" class="form-control" placeholder="Any additional notes for your therapist..."></textarea>
+        </div>
+    </div>
+    <button type="submit" class="submit-btn">Save Record</button>
+</form>
+
+<hr class="section-divider">
+
+<!-- History List -->
+<h3 style="margin-bottom: 1rem;">Past Records</h3>
+{% if val %}
+<table>
+    <thead>
+        <tr>
+            <th>Condition</th>
+            <th>Injury Type</th>
+            <th>Diagnosed</th>
+            <th>Description</th>
+            <th>Notes</th>
+            <th>Recorded On</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for h in val %}
+        <tr>
+            <td><strong>{{ h.condition }}</strong></td>
+            <td>{% if h.injury_type %}<span class="record-badge">{{ h.injury_type }}</span>{% else %}—{% endif %}</td>
+            <td>{{ h.diagnosed_date|default:"—" }}</td>
+            <td>{{ h.description|default:"—"|truncatewords:12 }}</td>
+            <td>{{ h.notes|default:"—"|truncatewords:10 }}</td>
+            <td>{{ h.created_date|date:"d M Y" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div style="text-align: center; padding: 2rem; color: var(--text-light);">
+    <p style="font-size: 2rem; margin-bottom: 0.5rem;">📁</p>
+    <p>No medical records yet. Use the form above to add your first record.</p>
+</div>
+{% endif %}
+{% endblock %}
