@@ -1,0 +1,193 @@
+{% extends "USER/user_base.html" %}
+
+{% block title %}Session Tracker – {{ session.plan_item.exercise.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tracker-layout { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; }
+    .camera-panel { background: #111827; border-radius: 12px; overflow: hidden; position: relative; min-height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .camera-placeholder { color: #6b7280; text-align: center; }
+    .camera-placeholder p { font-size: 0.9rem; margin-top: 0.5rem; }
+    #video-feed { width: 100%; border-radius: 12px; display: block; }
+    .overlay-badge {
+        position: absolute; top: 1rem; left: 1rem;
+        background: rgba(37,99,235,0.85); color: white;
+        padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.8rem; font-weight: 700;
+        backdrop-filter: blur(4px);
+    }
+    .side-panel { display: flex; flex-direction: column; gap: 1rem; }
+    .info-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1.25rem; }
+    .info-box h4 { margin: 0 0 0.75rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-light); }
+    .progress-row { display: flex; justify-content: space-between; margin-bottom: 0.4rem; align-items: center; }
+    .progress-bar-wrap { background: #e5e7eb; border-radius: 6px; height: 10px; flex: 1; margin-left: 0.75rem; overflow: hidden; }
+    .progress-bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--primary), #60a5fa); transition: width 0.4s; }
+    .counter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .counter-box { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; text-align: center; }
+    .counter-box .num { font-size: 2.5rem; font-weight: 700; color: var(--primary); line-height: 1; }
+    .counter-box .lbl { font-size: 0.75rem; color: var(--text-light); font-weight: 600; text-transform: uppercase; margin-top: 0.25rem; }
+    .accuracy-ring { font-size: 2rem; font-weight: 700; text-align: center; color: #10b981; }
+    .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.8rem; font-weight: 700; }
+    .status-in_progress { background: #fef3c7; color: #92400e; }
+    .status-completed { background: #d1fae5; color: #065f46; }
+    .status-aborted { background: #fee2e2; color: #991b1b; }
+    .action-btn {
+        width: 100%; padding: 0.85rem; border-radius: 8px; border: none;
+        font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-stop { background: #fee2e2; color: #991b1b; }
+    .btn-stop:hover { background: #fecaca; }
+    .btn-done { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn-done:hover { opacity: 0.9; }
+    .session-meta { font-size: 0.85rem; color: var(--text-light); }
+    .session-meta strong { color: var(--text-main); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+    <a href="/user_view_plans" style="color: var(--primary); text-decoration: none; font-weight: 600;">← My Plans</a>
+    <span style="color: #d1d5db;">/</span>
+    <span style="font-weight: 600;">Live Session</span>
+    <span class="status-badge status-{{ session.status }}" style="margin-left: 0.5rem;">
+        {{ session.get_status_display }}
+    </span>
+</div>
+
+<h2 style="margin: 0 0 0.25rem;">{{ session.plan_item.exercise.name }}</h2>
+<p class="session-meta" style="margin: 0 0 1.5rem;">
+    <strong>Plan:</strong> {{ session.plan_item.plan.title }} &bull;
+    <strong>Target:</strong> {{ session.plan_item.prescribed_sets }} sets × {{ session.plan_item.prescribed_reps }} reps &bull;
+    <strong>Body Part:</strong> {{ session.plan_item.exercise.get_body_part_display }} &bull;
+    <strong>Angle Range:</strong> {{ session.plan_item.exercise.target_angle_min }}° – {{ session.plan_item.exercise.target_angle_max }}°
+</p>
+
+<div class="tracker-layout">
+    <!-- Camera / Video Panel -->
+    <div>
+        <div class="camera-panel" id="camera-panel">
+            <div class="overlay-badge" id="live-badge">🔴 LIVE</div>
+            <video id="video-feed" autoplay playsinline muted></video>
+            <div class="camera-placeholder" id="camera-placeholder" style="display:none;">
+                <p style="font-size: 3rem;">📷</p>
+                <p>Camera not available.<br>Grant camera permission to enable tracking.</p>
+            </div>
+        </div>
+        <!-- Angle display -->
+        <div style="background: #111827; border-radius: 0 0 12px 12px; padding: 0.75rem 1.25rem; display: flex; justify-content: space-between; color: white; font-family: monospace; font-size: 1.1rem;">
+            <span>Joint Angle: <strong id="current-angle" style="color: #60a5fa;">--°</strong></span>
+            <span>Target: <strong style="color: #10b981;">{{ session.plan_item.exercise.target_angle_min }}° – {{ session.plan_item.exercise.target_angle_max }}°</strong></span>
+        </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="side-panel">
+        <!-- Rep / Set Counters -->
+        <div class="info-box">
+            <h4>Progress</h4>
+            <div class="counter-grid">
+                <div class="counter-box">
+                    <div class="num" id="completed-reps">{{ session.completed_reps }}</div>
+                    <div class="lbl">Reps Done</div>
+                </div>
+                <div class="counter-box">
+                    <div class="num">{{ session.plan_item.prescribed_reps }}</div>
+                    <div class="lbl">Target Reps</div>
+                </div>
+                <div class="counter-box">
+                    <div class="num" id="completed-sets">{{ session.completed_sets }}</div>
+                    <div class="lbl">Sets Done</div>
+                </div>
+                <div class="counter-box">
+                    <div class="num">{{ session.plan_item.prescribed_sets }}</div>
+                    <div class="lbl">Target Sets</div>
+                </div>
+            </div>
+
+            <!-- Rep Progress Bar -->
+            <div style="margin-top: 1rem;">
+                <div class="progress-row">
+                    <span style="font-size:0.8rem; font-weight:600; color: var(--text-light);">Reps</span>
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar-fill" id="rep-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <div class="progress-row">
+                    <span style="font-size:0.8rem; font-weight:600; color: var(--text-light);">Sets</span>
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar-fill" id="set-bar" style="width: 0%; background: linear-gradient(90deg, #10b981, #6ee7b7);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accuracy -->
+        <div class="info-box" style="text-align: center;">
+            <h4>Avg Accuracy</h4>
+            <div class="accuracy-ring" id="accuracy-display">
+                {% if session.avg_accuracy %}{{ session.avg_accuracy|floatformat:1 }}%{% else %}—{% endif %}
+            </div>
+            <p style="font-size:0.8rem; color: var(--text-light); margin: 0.5rem 0 0;">Based on joint angle alignment</p>
+        </div>
+
+        <!-- Timer -->
+        <div class="info-box" style="text-align: center;">
+            <h4>Session Timer</h4>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--primary); font-family: monospace;" id="timer">00:00</div>
+            <p style="font-size: 0.8rem; color: var(--text-light); margin: 0.25rem 0 0;">Started: {{ session.started_date|date:"H:i" }}</p>
+        </div>
+
+        <!-- Instructions -->
+        {% if session.plan_item.instructions %}
+        <div class="info-box">
+            <h4>Instructions</h4>
+            <p style="margin: 0; font-size: 0.9rem; color: var(--text-light);">{{ session.plan_item.instructions }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <a href="/user_view_plans" class="action-btn btn-done" style="text-align:center; text-decoration:none; display:block; padding: 0.85rem;">
+            ✅ Finish Session
+        </a>
+        <a href="/user_view_plans" class="action-btn btn-stop" style="text-align:center; text-decoration:none; display:block; padding: 0.85rem;">
+            ⏹ Stop &amp; Discard
+        </a>
+    </div>
+</div>
+
+<script>
+    // ── Camera Access ──────────────────────────────────────────────
+    const video = document.getElementById('video-feed');
+    const placeholder = document.getElementById('camera-placeholder');
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => { video.srcObject = stream; })
+            .catch(() => {
+                video.style.display = 'none';
+                placeholder.style.display = 'flex';
+                document.getElementById('live-badge').textContent = '⚠️ No Camera';
+            });
+    } else {
+        video.style.display = 'none';
+        placeholder.style.display = 'block';
+    }
+
+    // ── Session Timer ──────────────────────────────────────────────
+    let seconds = 0;
+    const timerEl = document.getElementById('timer');
+    setInterval(() => {
+        seconds++;
+        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const s = String(seconds % 60).padStart(2, '0');
+        timerEl.textContent = `${m}:${s}`;
+    }, 1000);
+
+    // ── Progress Bars (initialise from server values) ──────────────
+    const targetReps = {{ session.plan_item.prescribed_reps }};
+    const targetSets = {{ session.plan_item.prescribed_sets }};
+    const doneReps   = {{ session.completed_reps }};
+    const doneSets   = {{ session.completed_sets }};
+    document.getElementById('rep-bar').style.width = Math.min((doneReps / targetReps) * 100, 100) + '%';
+    document.getElementById('set-bar').style.width = Math.min((doneSets / targetSets) * 100, 100) + '%';
+</script>
+{% endblock %}
