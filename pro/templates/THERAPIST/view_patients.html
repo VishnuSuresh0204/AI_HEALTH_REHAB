@@ -1,0 +1,49 @@
+{% extends "THERAPIST/therapist_base.html" %}
+
+{% block title %}My Patients - AI Healthcare{% endblock %}
+
+{% block content %}
+<h2>My Patients</h2>
+<p>Manage the patients assigned to your care and track their progress.</p>
+
+<div style="display: flex; gap: 2rem; margin: 2rem 0; padding: 1.5rem; background: #f3f4f6; border-radius: 8px;">
+    <div>
+        <h3 style="margin: 0; color: var(--primary); font-size: 2rem;">{{ stats.total }}</h3>
+        <span style="color: var(--text-light); font-weight: 600;">Total Patients</span>
+    </div>
+    <div>
+        <h3 style="margin: 0; color: var(--primary); font-size: 2rem;">{{ stats.active_plans }}</h3>
+        <span style="color: var(--text-light); font-weight: 600;">Active Plans</span>
+    </div>
+</div>
+
+{% if val %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Condition</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in val %}
+        <tr>
+            <td>{{ p.name }}</td>
+            <td>{{ p.email }}</td>
+            <td>{{ p.phone }}</td>
+            <td>{{ p.condition|default:"N/A" }}</td>
+            <td>
+                <a href="#" class="btn-action btn-approve">View Details</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="margin-top: 2rem; font-style: italic; color: var(--text-light);">You have no patients assigned to you yet.</p>
+{% endif %}
+
+{% endblock %}

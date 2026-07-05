@@ -1,0 +1,38 @@
+{% extends "THERAPIST/therapist_base.html" %}
+
+{% block title %}Unassigned Patients - AI Healthcare{% endblock %}
+
+{% block content %}
+<h2>Unassigned Patients</h2>
+<p>The following patients have registered but have not been assigned to a therapist yet. You can add them to your caseload.</p>
+
+{% if available_patients %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Condition</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in available_patients %}
+        <tr>
+            <td>{{ p.name }}</td>
+            <td>{{ p.email }}</td>
+            <td>{{ p.phone }}</td>
+            <td>{{ p.condition|default:"N/A" }}</td>
+            <td>
+                <a href="/therapist_add_patient?id={{ p.id }}" class="btn-action btn-approve" onclick="return confirm('Are you sure you want to add {{ p.name }} to your patients?');">Add to Caseload</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="margin-top: 2rem; font-style: italic; color: var(--text-light);">There are currently no unassigned patients.</p>
+{% endif %}
+
+{% endblock %}

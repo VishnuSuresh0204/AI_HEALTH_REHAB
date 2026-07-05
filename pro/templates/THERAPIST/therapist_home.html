@@ -1,0 +1,12 @@
+{% extends "THERAPIST/therapist_base.html" %}
+
+{% block title %}Therapist Home - AI Healthcare{% endblock %}
+
+{% block content %}
+<h2>Welcome to the Therapist Dashboard</h2>
+<p>From here you can manage your caseload, view your patients' exercise plans, and accept new patients into your care.</p>
+<div style="display: flex; gap: 1rem; margin-top: 2rem;">
+    <a href="/therapist_view_patients" class="btn-primary" style="padding: 1rem 2rem; text-decoration: none; background-color: var(--primary); color: white; border-radius: 8px;">View My Patients</a>
+    <a href="/therapist_view_unassigned_patients" class="btn-primary" style="padding: 1rem 2rem; text-decoration: none; background-color: #10b981; color: white; border-radius: 8px;">Find New Patients</a>
+</div>
+{% endblock %}
