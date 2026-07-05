@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from myapp import views
 
 urlpatterns = [
@@ -26,7 +28,7 @@ urlpatterns = [
     path('register_user/', views.register_user),
     path('register_therapist/', views.register_therapist),
  
-    # ---------------- ADMIN ---------------- #
+   # ---------------- ADMIN ---------------- #
     path('admin_home/', views.admin_home),
     path('admin_view_therapists/', views.admin_view_therapists),
     path('admin_therapist_action/', views.admin_therapist_action),
@@ -35,15 +37,24 @@ urlpatterns = [
     path('admin_view_exercises/', views.admin_view_exercises),
     path('admin_add_exercise/', views.admin_add_exercise),
     path('admin_edit_exercise/', views.admin_edit_exercise),
-
-     path('therapist_home/', views.therapist_home),
+    
+ 
+    # ---------------- THERAPIST ---------------- #
+    path('therapist_home/', views.therapist_home),
     path('therapist_view_unassigned_patients/', views.therapist_view_unassigned_patients),
     path('therapist_add_patient/', views.therapist_add_patient),
     path('therapist_view_patients/', views.therapist_view_patients),
-    # path('therapist_patient_detail/', views.therapist_patient_detail),
-
-
-     path('user_home/', views.user_home),
+    path('therapist_patient_detail/', views.therapist_patient_detail),
+    path('therapist_create_plan/', views.therapist_create_plan),
+    path('therapist_edit_plan_items/', views.therapist_edit_plan_items),
+    path('therapist_view_sessions/', views.therapist_view_sessions),
+    
+ 
+    # ---------------- PATIENT ---------------- #
+    path('user_home/', views.user_home),
     path('user_view_plans/', views.user_view_plans),
     path('user_medical_history/', views.user_medical_history),
-]
+    path('user_start_session/', views.user_start_session),
+    path('user_session_tracker/', views.user_session_tracker),
+    
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
