@@ -1,3 +1,4 @@
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
  
@@ -126,8 +127,8 @@ class TherapistProfile(models.Model):
  
     def __str__(self):
         return self.name
-
-
+ 
+ 
 # ---------------- MEDICAL HISTORY ---------------- #
  
 class MedicalHistory(models.Model):
@@ -169,7 +170,6 @@ class MedicalHistory(models.Model):
     def __str__(self):
         return f"{self.condition} - {self.user.name}"
  
-
  
 # ---------------- EXERCISE (LIBRARY) ---------------- #
  
@@ -280,8 +280,6 @@ class ExercisePlan(models.Model):
     def __str__(self):
         return f"{self.title} - {self.patient.name}"
  
-
-
  
 # ---------------- EXERCISE PLAN ITEM ---------------- #
  
@@ -382,4 +380,3 @@ class ExerciseSession(models.Model):
  
     def __str__(self):
         return f"{self.patient.name} - {self.plan_item.exercise.name}"
- 
