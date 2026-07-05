@@ -1,0 +1,79 @@
+{% extends "USER/user_base.html" %}
+
+{% block title %}My Exercise Plans – AI Healthcare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .plan-card {
+        border: 1px solid #e5e7eb; border-radius: 10px; padding: 1.5rem;
+        margin-bottom: 1.25rem; transition: box-shadow 0.2s;
+    }
+    .plan-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .plan-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+    .plan-header h3 { margin: 0; }
+    .badge-active { background: #d1fae5; color: #065f46; padding: 0.2rem 0.7rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+    .plan-meta { color: var(--text-light); font-size: 0.875rem; margin: 0 0 1rem; }
+    .plan-meta span { margin-right: 1rem; }
+    .items-table { width: 100%; border-collapse: collapse; }
+    .items-table th, .items-table td { padding: 0.65rem 0.75rem; text-align: left; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; }
+    .items-table th { font-weight: 700; color: var(--text-light); background: #f9fafb; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 style="margin: 0 0 0.5rem;">My Exercise Plans</h2>
+<p style="margin: 0 0 2rem; color: var(--text-light);">Active rehabilitation plans prescribed by your therapist.</p>
+
+{% if val %}
+    {% for plan in val %}
+    <div class="plan-card">
+        <div class="plan-header">
+            <h3>{{ plan.title }}</h3>
+            <span class="badge-active">Active</span>
+        </div>
+        <p class="plan-meta">
+            {% if plan.goal %}<span>🎯 {{ plan.goal }}</span>{% endif %}
+            {% if plan.start_date %}<span>📅 Start: {{ plan.start_date }}</span>{% endif %}
+            {% if plan.end_date %}<span>🏁 End: {{ plan.end_date }}</span>{% endif %}
+            <span>👨‍⚕️ {{ plan.therapist.name }}</span>
+        </p>
+
+        {% with items=plan.items.all %}
+        {% if items %}
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Exercise</th>
+                    <th>Body Part</th>
+                    <th>Sets</th>
+                    <th>Reps</th>
+                    <th>Frequency / Week</th>
+                    <th>Instructions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td><strong>{{ item.exercise.name }}</strong></td>
+                    <td>{{ item.exercise.get_body_part_display }}</td>
+                    <td>{{ item.prescribed_sets }}</td>
+                    <td>{{ item.prescribed_reps }}</td>
+                    <td>{{ item.frequency_per_week }}x</td>
+                    <td>{{ item.instructions|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p style="color: var(--text-light); font-style: italic; font-size: 0.875rem;">No exercises have been added to this plan yet.</p>
+        {% endif %}
+        {% endwith %}
+    </div>
+    {% endfor %}
+{% else %}
+<div style="text-align: center; padding: 3rem; color: var(--text-light);">
+    <p style="font-size: 2.5rem; margin-bottom: 0.5rem;">🗂️</p>
+    <p>You have no active exercise plans. Your therapist will assign one soon.</p>
+</div>
+{% endif %}
+{% endblock %}
