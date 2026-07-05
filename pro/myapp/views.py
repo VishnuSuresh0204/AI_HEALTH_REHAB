@@ -183,3 +183,37 @@ def admin_edit_exercise(request):
         messages.success(request, "Exercise updated")
         return redirect("/admin_view_exercises")
     return render(request, "ADMIN/edit_exercise.html", {"ex": ex})
+
+
+
+def therapist_home(request):
+    return render(request, "THERAPIST/therapist_home.html")
+ 
+def therapist_view_unassigned_patients(request):
+    # Patients who registered without picking a therapist
+    p = UserProfile.objects.filter(therapist__isnull=True)
+    return render(request, "THERAPIST/unassigned_patients.html", {"available_patients": p})
+ 
+def therapist_add_patient(request):
+    auth_check = require_login(request)
+    if auth_check: return auth_check
+ 
+    pid = request.GET.get("id")
+    t = TherapistProfile.objects.get(loginid_id=request.session["lid"])
+    p = UserProfile.objects.get(id=pid)
+    p.therapist = t
+    p.save()
+    messages.success(request, f"{p.name} added to your caseload")
+    return redirect("/therapist_view_patients")
+ 
+def therapist_view_patients(request):
+    auth_check = require_login(request)
+    if auth_check: return auth_check
+ 
+    t = TherapistProfile.objects.get(loginid_id=request.session["lid"])
+    p = UserProfile.objects.filter(therapist=t)
+    stats = {
+        "total": p.count(),
+        "active_plans": ExercisePlan.objects.filter(therapist=t, is_active=True).count(),
+    }
+    return render(request, "THERAPIST/view_patients.html", {"val": p, "stats": stats})
