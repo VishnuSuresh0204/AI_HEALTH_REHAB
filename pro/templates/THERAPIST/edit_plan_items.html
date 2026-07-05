@@ -1,0 +1,99 @@
+{% extends "THERAPIST/therapist_base.html" %}
+
+{% block title %}Edit Plan – {{ plan.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-light); }
+    .form-control {
+        width: 100%; padding: 0.65rem 0.75rem; border: 1px solid #d1d5db;
+        border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 0.95rem;
+    }
+    .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139,92,246,0.2); }
+    textarea.form-control { resize: vertical; min-height: 80px; }
+    .add-btn {
+        background: var(--primary); color: white; border: none;
+        padding: 0.7rem 1.8rem; border-radius: 6px; font-size: 0.95rem;
+        font-weight: 700; cursor: pointer; transition: background 0.2s; margin-top: 1rem;
+    }
+    .add-btn:hover { background: var(--primary-hover); }
+    .item-card {
+        background: #f3f4f6; border-radius: 8px; padding: 1rem 1.5rem;
+        margin-bottom: 0.75rem; display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1rem; align-items: center;
+    }
+    .item-card h4 { margin: 0 0 0.2rem; }
+    .item-card p { margin: 0; font-size: 0.85rem; color: var(--text-light); }
+    .plan-meta { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem; }
+    .plan-meta h2 { margin: 0 0 0.5rem; }
+    .plan-meta p { margin: 0; opacity: 0.85; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+    <a href="/therapist_patient_detail?id={{ plan.patient.id }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">← Back to Patient</a>
+</div>
+
+<div class="plan-meta">
+    <h2>{{ plan.title }}</h2>
+    <p>Patient: <strong>{{ plan.patient.name }}</strong> &bull; {{ plan.start_date|default:"No start date" }} → {{ plan.end_date|default:"No end date" }}</p>
+    {% if plan.goal %}<p style="margin-top: 0.5rem;">🎯 {{ plan.goal }}</p>{% endif %}
+</div>
+
+<!-- Add Exercise Form -->
+<h3>Add Exercise to Plan</h3>
+<form method="POST">
+    {% csrf_token %}
+    <div class="two-col">
+        <div class="form-group">
+            <label for="exercise-id">Exercise *</label>
+            <select id="exercise-id" name="exercise_id" class="form-control" required>
+                <option value="">-- Select Exercise --</option>
+                {% for e in exercises %}
+                <option value="{{ e.id }}">{{ e.name }} ({{ e.get_body_part_display }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="freq">Frequency per Week</label>
+            <input type="number" id="freq" name="frequency_per_week" class="form-control" value="3" min="1" max="7">
+        </div>
+        <div class="form-group">
+            <label for="sets">Prescribed Sets</label>
+            <input type="number" id="sets" name="prescribed_sets" class="form-control" value="3" min="1">
+        </div>
+        <div class="form-group">
+            <label for="reps">Prescribed Reps</label>
+            <input type="number" id="reps" name="prescribed_reps" class="form-control" value="10" min="1">
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="instructions">Special Instructions</label>
+            <textarea id="instructions" name="instructions" class="form-control" placeholder="Any specific notes for this exercise..."></textarea>
+        </div>
+    </div>
+    <button type="submit" class="add-btn">+ Add to Plan</button>
+</form>
+
+<!-- Current Plan Items -->
+<h3 style="margin-top: 2rem;">Current Plan Items ({{ items|length }})</h3>
+{% if items %}
+    <div style="display: grid; grid-template-columns: 3fr 1fr 1fr 1fr; gap: 0.5rem; padding: 0.5rem 1.5rem; font-weight: 700; color: var(--text-light); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">
+        <span>Exercise</span><span>Sets</span><span>Reps</span><span>Freq/Wk</span>
+    </div>
+    {% for item in items %}
+    <div class="item-card">
+        <div>
+            <h4>{{ item.exercise.name }}</h4>
+            <p>{{ item.exercise.get_body_part_display }} &bull; {{ item.instructions|default:"No special instructions"|truncatewords:10 }}</p>
+        </div>
+        <span style="font-weight: 700;">{{ item.prescribed_sets }}</span>
+        <span style="font-weight: 700;">{{ item.prescribed_reps }}</span>
+        <span style="font-weight: 700;">{{ item.frequency_per_week }}x</span>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="color: var(--text-light); font-style: italic;">No exercises added yet. Use the form above.</p>
+{% endif %}
+{% endblock %}
