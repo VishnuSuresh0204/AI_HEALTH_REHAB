@@ -380,3 +380,98 @@ class ExerciseSession(models.Model):
  
     def __str__(self):
         return f"{self.patient.name} - {self.plan_item.exercise.name}"
+ 
+ 
+# ---------------- POSE FRAME LOG (AI OUTPUT) ---------------- #
+ 
+class PoseFrameLog(models.Model):
+    session = models.ForeignKey(
+        ExerciseSession,
+        on_delete=models.CASCADE,
+        related_name="frame_logs"
+    )
+ 
+    frame_number = models.IntegerField()
+ 
+    timestamp_ms = models.IntegerField()
+ 
+    joint_angle = models.FloatField()
+ 
+    posture_accuracy = models.FloatField()
+ 
+    is_rep_complete = models.BooleanField(
+        default=False
+    )
+ 
+    landmarks_json = models.TextField(
+        null=True,
+        blank=True
+    )
+ 
+    def __str__(self):
+        return f"Frame {self.frame_number} - Session {self.session_id}"
+ 
+ 
+# ---------------- PERFORMANCE REPORT ---------------- #
+ 
+class PerformanceReport(models.Model):
+    session = models.OneToOneField(
+        ExerciseSession,
+        on_delete=models.CASCADE,
+        related_name="report"
+    )
+ 
+    overall_score = models.FloatField(
+        default=0
+    )
+ 
+    posture_feedback = models.TextField(
+        null=True,
+        blank=True
+    )
+ 
+    repetition_accuracy = models.FloatField(
+        default=0
+    )
+ 
+    recommendations = models.TextField(
+        null=True,
+        blank=True
+    )
+ 
+    flagged_for_review = models.BooleanField(
+        default=False
+    )
+ 
+    reviewed_by = models.ForeignKey(
+        TherapistProfile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_reports"
+    )
+ 
+    reviewed_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+ 
+    therapist_comments = models.TextField(
+        null=True,
+        blank=True
+    )
+ 
+    report_file = models.FileField(
+        upload_to="reports/",
+        null=True,
+        blank=True
+    )
+ 
+    generated_date = models.DateTimeField(
+        auto_now_add=True
+    )
+ 
+    def __str__(self):
+        return f"Report - {self.session}"
+ 
+ 
