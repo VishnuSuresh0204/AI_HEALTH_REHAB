@@ -1,0 +1,111 @@
+{% extends "USER/user_base.html" %}
+
+{% block title %}Start Session – {{ item.exercise.name|default:"Exercise" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .exercise-card {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border: 1px solid #bfdbfe; border-radius: 12px; padding: 2rem; margin-bottom: 2rem;
+        display: flex; gap: 2rem; align-items: flex-start;
+    }
+    .exercise-card .thumb {
+        width: 160px; height: 120px; border-radius: 8px; object-fit: cover; flex-shrink: 0;
+        background: #dbeafe; display: flex; align-items: center; justify-content: center;
+        font-size: 3rem;
+    }
+    .exercise-card .thumb img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; }
+    .exercise-info h3 { margin: 0 0 0.5rem; font-size: 1.5rem; }
+    .exercise-info p { margin: 0 0 0.5rem; color: var(--text-light); }
+    .stat-row { display: flex; gap: 2rem; margin-top: 1rem; }
+    .stat { text-align: center; background: white; border-radius: 8px; padding: 0.75rem 1.5rem; border: 1px solid #bfdbfe; }
+    .stat .val { font-size: 1.75rem; font-weight: 700; color: var(--primary); }
+    .stat .lbl { font-size: 0.75rem; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .demo-video { width: 100%; border-radius: 10px; margin-bottom: 2rem; max-height: 320px; }
+    .confirm-form { text-align: center; }
+    .start-btn {
+        background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
+        color: white; border: none; padding: 1rem 3rem; border-radius: 10px;
+        font-size: 1.1rem; font-weight: 700; cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+    }
+    .start-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
+    .warning-box { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; color: #92400e; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+    <a href="/user_view_plans" style="color: var(--primary); text-decoration: none; font-weight: 600;">← Back to My Plans</a>
+</div>
+
+<h2 style="margin: 0 0 1.5rem;">Start Exercise Session</h2>
+
+{% if item %}
+    <!-- Exercise Details Card -->
+    <div class="exercise-card">
+        <div class="thumb">
+            {% if item.exercise.thumbnail %}
+                <img src="{{ item.exercise.thumbnail.url }}" alt="{{ item.exercise.name }}">
+            {% else %}
+                🏋️
+            {% endif %}
+        </div>
+        <div class="exercise-info">
+            <h3>{{ item.exercise.name }}</h3>
+            <p>{{ item.exercise.description|default:"No description available." }}</p>
+            <p><strong>Body Part:</strong> {{ item.exercise.get_body_part_display }} &bull;
+               <strong>Target Angle:</strong> {{ item.exercise.target_angle_min }}° – {{ item.exercise.target_angle_max }}°</p>
+            <div class="stat-row">
+                <div class="stat">
+                    <div class="val">{{ item.prescribed_sets }}</div>
+                    <div class="lbl">Sets</div>
+                </div>
+                <div class="stat">
+                    <div class="val">{{ item.prescribed_reps }}</div>
+                    <div class="lbl">Reps</div>
+                </div>
+                <div class="stat">
+                    <div class="val">{{ item.frequency_per_week }}x</div>
+                    <div class="lbl">Per Week</div>
+                </div>
+            </div>
+            {% if item.instructions %}
+                <p style="margin-top: 1rem; font-style: italic; color: var(--text-light);">📋 {{ item.instructions }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Demo Video -->
+    {% if item.exercise.demo_video %}
+    <h3>Demo Video</h3>
+    <video class="demo-video" controls>
+        <source src="{{ item.exercise.demo_video.url }}">
+        Your browser does not support the video tag.
+    </video>
+    {% endif %}
+
+    <div class="warning-box">
+        ⚠️ Make sure your camera is ready and you are in a clear, well-lit space before starting. Position yourself so your full body is visible.
+    </div>
+
+    <!-- Confirm & Start -->
+    <div class="confirm-form">
+        <form method="POST" action="/user_start_session?itemid={{ itemid }}">
+            {% csrf_token %}
+            <button type="submit" class="start-btn">🎬 Start Session Now</button>
+        </form>
+        <p style="margin-top: 1rem; color: var(--text-light); font-size: 0.875rem;">
+            Your session will be recorded and reviewed by your therapist.
+        </p>
+    </div>
+
+{% else %}
+    <div style="text-align: center; padding: 3rem; color: var(--text-light);">
+        <p style="font-size: 2.5rem; margin-bottom: 0.5rem;">❌</p>
+        <p>Exercise not found. Please go back to your plans and try again.</p>
+        <a href="/user_view_plans" style="color: var(--primary); font-weight: 600;">Go to My Plans</a>
+    </div>
+{% endif %}
+{% endblock %}
