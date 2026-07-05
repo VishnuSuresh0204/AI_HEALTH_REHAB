@@ -35,4 +35,6 @@ urlpatterns = [
     path('admin_view_exercises/', views.admin_view_exercises),
     path('admin_add_exercise/', views.admin_add_exercise),
     path('admin_edit_exercise/', views.admin_edit_exercise),
+
+    
 ]
