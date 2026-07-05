@@ -1,0 +1,44 @@
+{% extends "USER/user_base.html" %}
+
+{% block title %}My Dashboard – AI Healthcare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero {
+        text-align: center; padding: 2rem 0 1rem;
+    }
+    .hero h2 { font-size: 2rem; margin: 0 0 0.5rem; }
+    .hero p { color: var(--text-light); margin: 0 0 2rem; }
+    .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+    .quick-card {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border: 1px solid #bfdbfe; border-radius: 12px; padding: 1.75rem;
+        text-decoration: none; color: var(--text-main); transition: transform 0.2s, box-shadow 0.2s;
+        display: block;
+    }
+    .quick-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(37,99,235,0.15); }
+    .quick-card .icon { font-size: 2.5rem; margin-bottom: 0.75rem; display: block; }
+    .quick-card h3 { margin: 0 0 0.4rem; }
+    .quick-card p { margin: 0; font-size: 0.875rem; color: var(--text-light); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h2>Welcome to Your Health Portal 👋</h2>
+    <p>Track your exercise plans, view your medical records, and monitor your rehabilitation progress.</p>
+</div>
+
+<div class="quick-links">
+    <a href="/user_view_plans" class="quick-card">
+        <span class="icon">📋</span>
+        <h3>My Exercise Plans</h3>
+        <p>View and follow the exercise plans assigned by your therapist.</p>
+    </a>
+    <a href="/user_medical_history" class="quick-card">
+        <span class="icon">🩺</span>
+        <h3>Medical History</h3>
+        <p>View and add your medical conditions and injury records.</p>
+    </a>
+</div>
+{% endblock %}
