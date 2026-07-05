@@ -307,3 +307,42 @@ def user_medical_history(request):
  
     h = MedicalHistory.objects.filter(user=u).order_by("-created_date")
     return render(request, "USER/medical_history.html", {"val": h})
+
+
+
+def user_start_session(request):
+    itemid = request.GET.get("itemid")
+    if request.method == "POST":
+        try:
+            u = UserProfile.objects.get(loginid_id=request.session["lid"])
+        except UserProfile.DoesNotExist:
+            messages.error(request, "User profile not found. Please log in as a patient.")
+            return redirect("/login")
+ 
+        if not itemid:
+            messages.error(request, "Invalid exercise selection")
+            return redirect("/user_view_plans")
+ 
+        try:
+            item = ExercisePlanItem.objects.get(id=itemid)
+        except ExercisePlanItem.DoesNotExist:
+            messages.error(request, "Exercise not found")
+            return redirect("/user_view_plans")
+ 
+        s = ExerciseSession.objects.create(patient=u, plan_item=item)
+        messages.success(request, "Session started")
+        return redirect(f"/user_session_tracker?id={s.id}")
+ 
+    item = None
+    if itemid:
+        try:
+            item = ExercisePlanItem.objects.get(id=itemid)
+        except ExercisePlanItem.DoesNotExist:
+            pass
+    return render(request, "USER/start_session.html", {"itemid": itemid, "item": item})
+ 
+def user_session_tracker(request):
+    id = request.GET.get("id")
+    s = ExerciseSession.objects.get(id=id)
+    return render(request, "USER/session_tracker.html", {"session": s})
+ 
