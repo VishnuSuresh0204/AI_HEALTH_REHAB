@@ -1,0 +1,76 @@
+{% extends "THERAPIST/therapist_base.html" %}
+
+{% block title %}Exercise Sessions – AI Healthcare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-badge {
+        padding: 0.2rem 0.7rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700;
+    }
+    .status-completed { background: #d1fae5; color: #065f46; }
+    .status-in_progress { background: #fef3c7; color: #92400e; }
+    .status-aborted { background: #fee2e2; color: #991b1b; }
+    .accuracy-bar { height: 8px; border-radius: 4px; background: #e5e7eb; width: 100px; display: inline-block; vertical-align: middle; overflow: hidden; }
+    .accuracy-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #8b5cf6, #10b981); }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 style="margin: 0 0 0.5rem;">Exercise Sessions</h2>
+<p style="margin: 0 0 2rem; color: var(--text-light);">All recorded sessions for your patients, newest first.</p>
+
+{% if val %}
+<table>
+    <thead>
+        <tr>
+            <th>Patient</th>
+            <th>Exercise</th>
+            <th>Plan</th>
+            <th>Status</th>
+            <th>Reps / Sets</th>
+            <th>Accuracy</th>
+            <th>Duration</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in val %}
+        <tr>
+            <td><strong>{{ s.patient.name }}</strong></td>
+            <td>{{ s.plan_item.exercise.name }}</td>
+            <td>{{ s.plan_item.plan.title|truncatewords:5 }}</td>
+            <td>
+                <span class="status-badge status-{{ s.status }}">
+                    {{ s.get_status_display }}
+                </span>
+            </td>
+            <td>{{ s.completed_reps }} reps / {{ s.completed_sets }} sets</td>
+            <td>
+                {% if s.avg_accuracy %}
+                    <span class="accuracy-bar">
+                        <span class="accuracy-fill" style="width: {{ s.avg_accuracy }}%;"></span>
+                    </span>
+                    {{ s.avg_accuracy|floatformat:1 }}%
+                {% else %}
+                    <span style="color: var(--text-light);">—</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if s.duration_seconds %}
+                    {{ s.duration_seconds|floatformat:0 }}s
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+            <td>{{ s.started_date|date:"d M Y H:i" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div style="text-align: center; padding: 3rem; color: var(--text-light);">
+    <p style="font-size: 2rem; margin-bottom: 0.5rem;">📋</p>
+    <p>No exercise sessions recorded yet.</p>
+</div>
+{% endif %}
+{% endblock %}
