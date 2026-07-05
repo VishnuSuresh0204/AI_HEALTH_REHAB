@@ -217,3 +217,37 @@ def therapist_view_patients(request):
         "active_plans": ExercisePlan.objects.filter(therapist=t, is_active=True).count(),
     }
     return render(request, "THERAPIST/view_patients.html", {"val": p, "stats": stats})
+
+
+
+def user_home(request):
+    return render(request, "USER/user_home.html")
+ 
+def user_view_plans(request):
+    auth_check = require_login(request)
+    if auth_check: return auth_check
+ 
+    u = UserProfile.objects.get(loginid_id=request.session["lid"])
+    p = ExercisePlan.objects.filter(patient=u, is_active=True)
+    return render(request, "USER/view_plans.html", {"val": p})
+ 
+def user_medical_history(request):
+    auth_check = require_login(request)
+    if auth_check: return auth_check
+ 
+    u = UserProfile.objects.get(loginid_id=request.session["lid"])
+    if request.method == "POST":
+        cond = request.POST.get("condition")
+        desc = request.POST.get("description")
+        dd = request.POST.get("diagnosed_date") or None
+        inj = request.POST.get("injury_type")
+        notes = request.POST.get("notes")
+ 
+        MedicalHistory.objects.create(
+            user=u, condition=cond, description=desc, diagnosed_date=dd, injury_type=inj, notes=notes
+        )
+        messages.success(request, "Medical record added")
+        return redirect("/user_medical_history")
+ 
+    h = MedicalHistory.objects.filter(user=u).order_by("-created_date")
+    return render(request, "USER/medical_history.html", {"val": h})
