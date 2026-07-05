@@ -280,3 +280,106 @@ class ExercisePlan(models.Model):
     def __str__(self):
         return f"{self.title} - {self.patient.name}"
  
+
+
+ 
+# ---------------- EXERCISE PLAN ITEM ---------------- #
+ 
+class ExercisePlanItem(models.Model):
+    plan = models.ForeignKey(
+        ExercisePlan,
+        on_delete=models.CASCADE,
+        related_name="items"
+    )
+ 
+    exercise = models.ForeignKey(
+        Exercise,
+        on_delete=models.PROTECT,
+        related_name="plan_items"
+    )
+ 
+    prescribed_sets = models.IntegerField(
+        default=3
+    )
+ 
+    prescribed_reps = models.IntegerField(
+        default=10
+    )
+ 
+    frequency_per_week = models.IntegerField(
+        default=3
+    )
+ 
+    instructions = models.TextField(
+        null=True,
+        blank=True
+    )
+ 
+    def __str__(self):
+        return f"{self.exercise.name} - {self.plan.title}"
+ 
+ 
+# ---------------- EXERCISE SESSION ---------------- #
+ 
+class ExerciseSession(models.Model):
+ 
+    STATUS_CHOICES = (
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+        ("aborted", "Aborted"),
+    )
+ 
+    patient = models.ForeignKey(
+        UserProfile,
+        on_delete=models.CASCADE,
+        related_name="sessions"
+    )
+ 
+    plan_item = models.ForeignKey(
+        ExercisePlanItem,
+        on_delete=models.CASCADE,
+        related_name="sessions"
+    )
+ 
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="in_progress"
+    )
+ 
+    recorded_video = models.FileField(
+        upload_to="session_recordings/",
+        null=True,
+        blank=True
+    )
+ 
+    completed_reps = models.IntegerField(
+        default=0
+    )
+ 
+    completed_sets = models.IntegerField(
+        default=0
+    )
+ 
+    avg_accuracy = models.FloatField(
+        null=True,
+        blank=True
+    )
+ 
+    duration_seconds = models.IntegerField(
+        null=True,
+        blank=True
+    )
+ 
+    started_date = models.DateTimeField(
+        auto_now_add=True
+    )
+ 
+    ended_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+ 
+    def __str__(self):
+        return f"{self.patient.name} - {self.plan_item.exercise.name}"
+ 
