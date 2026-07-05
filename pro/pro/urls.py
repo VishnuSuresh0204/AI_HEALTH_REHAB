@@ -40,5 +40,5 @@ urlpatterns = [
     path('therapist_view_unassigned_patients/', views.therapist_view_unassigned_patients),
     path('therapist_add_patient/', views.therapist_add_patient),
     path('therapist_view_patients/', views.therapist_view_patients),
-    path('therapist_patient_detail/', views.therapist_patient_detail),
+    # path('therapist_patient_detail/', views.therapist_patient_detail),
 ]
