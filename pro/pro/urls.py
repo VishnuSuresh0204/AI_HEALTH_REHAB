@@ -36,5 +36,9 @@ urlpatterns = [
     path('admin_add_exercise/', views.admin_add_exercise),
     path('admin_edit_exercise/', views.admin_edit_exercise),
 
-    
+     path('therapist_home/', views.therapist_home),
+    path('therapist_view_unassigned_patients/', views.therapist_view_unassigned_patients),
+    path('therapist_add_patient/', views.therapist_add_patient),
+    path('therapist_view_patients/', views.therapist_view_patients),
+    path('therapist_patient_detail/', views.therapist_patient_detail),
 ]
