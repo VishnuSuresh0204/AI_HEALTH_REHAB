@@ -17,6 +17,8 @@
     .items-table { width: 100%; border-collapse: collapse; }
     .items-table th, .items-table td { padding: 0.65rem 0.75rem; text-align: left; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; }
     .items-table th { font-weight: 700; color: var(--text-light); background: #f9fafb; }
+    .btn-start { background: var(--primary); color: white; padding: 0.35rem 0.9rem; border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none; white-space: nowrap; transition: background 0.2s; }
+    .btn-start:hover { background: var(--primary-hover); }
 </style>
 {% endblock %}
 
@@ -49,6 +51,7 @@
                     <th>Reps</th>
                     <th>Frequency / Week</th>
                     <th>Instructions</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -60,6 +63,7 @@
                     <td>{{ item.prescribed_reps }}</td>
                     <td>{{ item.frequency_per_week }}x</td>
                     <td>{{ item.instructions|default:"—" }}</td>
+                    <td><a href="/user_start_session?itemid={{ item.id }}" class="btn-start">▶ Start</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
