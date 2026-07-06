@@ -1,0 +1,108 @@
+{% extends 'THERAPIST/therapist_base.html' %}
+
+{% block title %}Session Report - AI Healthcare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    .score-card {
+        background: linear-gradient(135deg, var(--primary), #60a5fa);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    .score-card h3 { margin: 0; font-size: 1.1rem; opacity: 0.9; }
+    .score-card .score { font-size: 3rem; font-weight: 700; margin: 0.5rem 0; line-height: 1; }
+    
+    .frame-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    .frame-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .frame-card h4 { margin: 0 0 0.5rem 0; color: var(--text-main); }
+    .frame-stat { display: flex; justify-content: space-between; margin-bottom: 0.3rem; font-size: 0.9rem; }
+    .status-badge {
+        padding: 0.3rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: inline-block;
+    }
+    .status-good { background: #d1fae5; color: #065f46; }
+    .status-bad { background: #fee2e2; color: #991b1b; }
+    .action-bar { display: flex; gap: 1rem; margin-top: 2rem; justify-content: center; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-header">
+    <h2>Detailed Session Report</h2>
+    <a href="/therapist_view_sessions" class="btn-primary" style="background: #6b7280;">&larr; Back to Sessions</a>
+</div>
+
+{% for r in val %}
+<div class="score-card">
+    <h3>Overall Posture Score</h3>
+    <div class="score">{{ r.overall_score }}%</div>
+    <p>{{ r.posture_feedback }}</p>
+</div>
+
+<div class="action-bar">
+    {% if r.flagged_for_review %}
+    <a href="/therapist_review_report?id={{ r.id }}&act=reviewed" class="btn-primary" style="background: #10b981;">Mark as Reviewed</a>
+    {% else %}
+    <a href="/therapist_review_report?id={{ r.id }}&act=flagged" class="btn-primary" style="background: #ef4444;">Flag for Review</a>
+    {% endif %}
+</div>
+{% empty %}
+<div class="alert alert-warning">No report generated for this session yet.</div>
+{% endfor %}
+
+<h3 style="margin-top: 3rem;">Frame-by-Frame Analysis</h3>
+<div class="frame-grid">
+    {% for f in frames %}
+    <div class="frame-card">
+        <h4>Frame #{{ f.frame_number }}</h4>
+        <div class="frame-stat">
+            <span style="color: var(--text-light)">Timestamp:</span>
+            <strong>{{ f.timestamp_ms }}ms</strong>
+        </div>
+        <div class="frame-stat">
+            <span style="color: var(--text-light)">Joint Angle:</span>
+            <strong>{{ f.joint_angle|floatformat:1 }}&deg;</strong>
+        </div>
+        <div class="frame-stat">
+            <span style="color: var(--text-light)">Accuracy:</span>
+            <span class="status-badge {% if f.posture_accuracy >= 80 %}status-good{% else %}status-bad{% endif %}">
+                {{ f.posture_accuracy|floatformat:1 }}%
+            </span>
+        </div>
+        {% if f.is_rep_complete %}
+        <div style="margin-top: 0.5rem; text-align: center; color: #10b981; font-weight: 700; font-size: 0.85rem;">
+            ✓ Repetition Logged
+        </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p style="color: var(--text-light); grid-column: 1 / -1;">No frame data recorded for this session.</p>
+    {% endfor %}
+</div>
+{% endblock %}
