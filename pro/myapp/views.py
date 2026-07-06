@@ -1,4 +1,4 @@
-﻿from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .models import *
@@ -275,6 +275,30 @@ def therapist_view_sessions(request):
     s = ExerciseSession.objects.filter(plan_item__plan__therapist=t).order_by("-started_date")
     return render(request, "THERAPIST/view_sessions.html", {"val": s})
 
+def therapist_view_session_report(request):
+    id = request.GET.get("id")  # session id
+    r = PerformanceReport.objects.filter(session_id=id)
+    frames = PoseFrameLog.objects.filter(session_id=id).order_by("frame_number")
+    return render(request, "THERAPIST/view_report.html", {"val": r, "frames": frames})
+
+def therapist_review_report(request):
+    from django.utils import timezone
+    id = request.GET.get("id")  # report id
+    act = request.GET.get("act")  # reviewed / flagged
+    r = PerformanceReport.objects.get(id=id)
+    t = TherapistProfile.objects.get(loginid_id=request.session["lid"])
+
+    if act == "reviewed":
+        r.flagged_for_review = False
+        r.reviewed_by = t
+        r.reviewed_date = timezone.now()
+    elif act == "flagged":
+        r.flagged_for_review = True
+
+    r.save()
+    return redirect("/therapist_view_sessions")
+
+# ================= PATIENT VIEWS =================
 
 def user_home(request):
     return render(request, "USER/user_home.html")
