@@ -48,6 +48,8 @@ urlpatterns = [
     path('therapist_create_plan/', views.therapist_create_plan),
     path('therapist_edit_plan_items/', views.therapist_edit_plan_items),
     path('therapist_view_sessions/', views.therapist_view_sessions),
+    path('therapist_view_session_report/', views.therapist_view_session_report),
+    path('therapist_review_report/', views.therapist_review_report),
     
  
     # ---------------- PATIENT ---------------- #
@@ -56,5 +58,9 @@ urlpatterns = [
     path('user_medical_history/', views.user_medical_history),
     path('user_start_session/', views.user_start_session),
     path('user_session_tracker/', views.user_session_tracker),
+    path('user_submit_frame/', views.user_submit_frame),
+    path('user_complete_session/', views.user_complete_session),
+    path('user_download_report/', views.user_download_report),
+    path('user_view_sessions/', views.user_view_sessions),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
