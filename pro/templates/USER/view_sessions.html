@@ -1,0 +1,152 @@
+{% extends 'USER/user_base.html' %}
+
+{% block title %}My Sessions - AI Healthcare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .header-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    
+    .session-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .session-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    }
+
+    .session-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .session-title h3 {
+        margin: 0 0 0.25rem 0;
+        color: var(--text-main);
+        font-size: 1.25rem;
+    }
+    
+    .session-date {
+        color: var(--text-light);
+        font-size: 0.875rem;
+    }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .status-completed { background: #d1fae5; color: #065f46; }
+    .status-in_progress { background: #fef3c7; color: #92400e; }
+    .status-abandoned { background: #fee2e2; color: #991b1b; }
+
+    .session-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+        text-align: center;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 8px;
+    }
+    .stat-box .lbl { font-size: 0.8rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 0.25rem; display: block; }
+    .stat-box .val { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+
+    .action-btn {
+        display: inline-block;
+        width: 100%;
+        text-align: center;
+        background: var(--primary);
+        color: white;
+        text-decoration: none;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    .action-btn:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #6b7280; }
+    .btn-secondary:hover { background: #4b5563; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="header-bar">
+    <h2>Session History</h2>
+    <a href="/user_view_plans" class="btn-primary">Start New Session</a>
+</div>
+
+{% if val %}
+    {% for s in val %}
+    <div class="session-card">
+        <div class="session-header">
+            <div class="session-title">
+                <h3>{{ s.plan_item.exercise.name }}</h3>
+                <div class="session-date">{{ s.started_date|date:"F j, Y, g:i a" }}</div>
+            </div>
+            <span class="status-badge status-{{ s.status }}">{{ s.status|title }}</span>
+        </div>
+
+        <div class="session-stats">
+            <div class="stat-box">
+                <span class="lbl">Sets Completed</span>
+                <span class="val">{{ s.completed_sets }} / {{ s.plan_item.prescribed_sets }}</span>
+            </div>
+            <div class="stat-box">
+                <span class="lbl">Reps Logged</span>
+                <span class="val">{{ s.completed_reps }}</span>
+            </div>
+            <div class="stat-box">
+                <span class="lbl">Duration</span>
+                <span class="val">
+                    {% if s.duration_seconds %}
+                        {{ s.duration_seconds }}s
+                    {% else %}
+                        --
+                    {% endif %}
+                </span>
+            </div>
+            <div class="stat-box">
+                <span class="lbl">Avg Accuracy</span>
+                <span class="val">{% if s.avg_accuracy %}{{ s.avg_accuracy }}%{% else %}--{% endif %}</span>
+            </div>
+        </div>
+
+        <div>
+            {% if s.status == 'in_progress' %}
+                <a href="/user_session_tracker?id={{ s.id }}" class="action-btn">Resume Session</a>
+            {% elif s.status == 'completed' %}
+                <a href="/user_download_report?id={{ s.id }}" class="action-btn btn-secondary">Download Report</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="glass-card" style="text-align: center; padding: 4rem 2rem;">
+        <h3 style="color: var(--text-light); margin-bottom: 1rem;">No Sessions Recorded Yet</h3>
+        <p style="color: #6b7280; margin-bottom: 2rem;">Head over to your exercise plans to start your first AI-guided therapy session.</p>
+        <a href="/user_view_plans" class="btn-primary">View My Plans</a>
+    </div>
+{% endif %}
+{% endblock %}

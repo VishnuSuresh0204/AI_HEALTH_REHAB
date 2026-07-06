@@ -365,6 +365,14 @@ def user_start_session(request):
             pass
     return render(request, "USER/start_session.html", {"itemid": itemid, "item": item})
 
+def user_view_sessions(request):
+    auth_check = require_login(request)
+    if auth_check: return auth_check
+
+    u = UserProfile.objects.get(loginid_id=request.session["lid"])
+    s = ExerciseSession.objects.filter(patient=u).order_by("-started_date")
+    return render(request, "USER/view_sessions.html", {"val": s})
+
 def user_session_tracker(request):
     id = request.GET.get("id")
     s = ExerciseSession.objects.get(id=id)
