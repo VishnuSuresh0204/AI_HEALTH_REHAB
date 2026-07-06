@@ -370,3 +370,82 @@ def user_session_tracker(request):
     s = ExerciseSession.objects.get(id=id)
     return render(request, "USER/session_tracker.html", {"session": s})
 
+def user_submit_frame(request):
+    import json
+    if request.method == "POST":
+        payload = json.loads(request.body)
+        s = ExerciseSession.objects.get(id=payload.get("session_id"), status="in_progress")
+        ex = s.plan_item.exercise
+
+        angle = float(payload.get("joint_angle"))
+        if ex.target_angle_min <= angle <= ex.target_angle_max:
+            accuracy = 100
+        else:
+            deviation = min(abs(angle - ex.target_angle_min), abs(angle - ex.target_angle_max))
+            accuracy = max(0, 100 - deviation)
+
+        if accuracy >= 85:
+            feedback = "Great form, keep going!"
+        elif accuracy >= 60:
+            feedback = "Adjust your posture slightly for better alignment."
+        else:
+            feedback = "Posture off target - slow down and realign with the demo."
+
+        rep_done = payload.get("is_rep_complete", False)
+
+        PoseFrameLog.objects.create(
+            session=s, frame_number=payload.get("frame_number"), timestamp_ms=payload.get("timestamp_ms"),
+            joint_angle=angle, posture_accuracy=accuracy, is_rep_complete=rep_done,
+            landmarks_json=json.dumps(payload.get("landmarks", {}))
+        )
+
+        if rep_done:
+            s.completed_reps += 1
+            s.save()
+
+        from django.http import JsonResponse
+        return JsonResponse({"status": "ok", "posture_accuracy": accuracy, "feedback": feedback, "reps": s.completed_reps})
+
+    from django.http import JsonResponse
+    return JsonResponse({"status": "invalid request"})
+
+def user_complete_session(request):
+    from django.utils import timezone
+    from django.http import JsonResponse
+
+    id = request.POST.get("id")
+    s = ExerciseSession.objects.get(id=id)
+    frames = PoseFrameLog.objects.filter(session=s)
+
+    avg = 0
+    if frames.exists():
+        avg = round(sum(f.posture_accuracy for f in frames) / frames.count(), 2)
+
+    s.status = "completed"
+    s.ended_date = timezone.now()
+    s.avg_accuracy = avg
+    s.completed_sets = request.POST.get("completed_sets") or s.completed_sets
+    s.duration_seconds = int((s.ended_date - s.started_date).total_seconds())
+    s.save()
+
+    PerformanceReport.objects.get_or_create(
+        session=s,
+        defaults={
+            "overall_score": avg,
+            "repetition_accuracy": avg,
+            "posture_feedback": "Great form, keep going!" if avg >= 85 else "Adjust your posture slightly for better alignment.",
+            "flagged_for_review": avg < 60,
+        }
+    )
+    messages.success(request, "Session completed")
+    return redirect("/user_view_sessions")
+
+
+def user_download_report(request):
+    id = request.GET.get("id")  # session id
+    r = PerformanceReport.objects.get(session_id=id)
+    if r.report_file:
+        return redirect(r.report_file.url)
+    messages.error(request, "Report not available yet")
+    return redirect("/user_view_sessions")
+
