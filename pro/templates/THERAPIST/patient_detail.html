@@ -23,7 +23,7 @@
 
 {% block content %}
 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-    <a href="/therapist_view_patients" style="color: var(--primary); text-decoration: none; font-weight: 600;">← Back to Patients</a>
+    <a href="/therapist_view_patients/" style="color: var(--primary); text-decoration: none; font-weight: 600;">← Back to Patients</a>
 </div>
 
 <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
@@ -38,7 +38,7 @@
         <h2 style="margin: 0;">{{ patient.name }}</h2>
         <p style="margin: 0.25rem 0 0; color: var(--text-light);">{{ patient.email }} &bull; {{ patient.phone }}</p>
     </div>
-    <a href="/therapist_create_plan?patient_id={{ patient.id }}" class="btn-primary" style="margin-left: auto;">+ Create New Plan</a>
+    <a href="/therapist_create_plan/?patient_id={{ patient.id }}" class="btn-primary" style="margin-left: auto;">+ Create New Plan</a>
 </div>
 
 <div class="detail-grid">
@@ -68,7 +68,7 @@
             <h4>{{ plan.title }} <span class="badge {% if plan.is_active %}badge-active{% else %}badge-inactive{% endif %}">{% if plan.is_active %}Active{% else %}Inactive{% endif %}</span></h4>
             <p>{{ plan.start_date|default:"No start" }} → {{ plan.end_date|default:"No end" }} &bull; {{ plan.goal|truncatewords:12 }}</p>
         </div>
-        <a href="/therapist_edit_plan_items?id={{ plan.id }}" class="btn-action btn-approve">Edit Plan</a>
+        <a href="/therapist_edit_plan_items/?id={{ plan.id }}" class="btn-action btn-approve">Edit Plan</a>
     </div>
     {% endfor %}
 {% else %}

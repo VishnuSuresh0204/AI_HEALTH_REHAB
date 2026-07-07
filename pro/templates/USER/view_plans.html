@@ -63,7 +63,7 @@
                     <td>{{ item.prescribed_reps }}</td>
                     <td>{{ item.frequency_per_week }}x</td>
                     <td>{{ item.instructions|default:"—" }}</td>
-                    <td><a href="/user_start_session?itemid={{ item.id }}" class="btn-start">▶ Start</a></td>
+                    <td><a href="/user_start_session/?itemid={{ item.id }}" class="btn-start">▶ Start</a></td>
                 </tr>
                 {% endfor %}
             </tbody>

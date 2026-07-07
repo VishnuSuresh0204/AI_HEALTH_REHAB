@@ -5,7 +5,7 @@
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <h2 style="margin: 0; color: var(--primary);">Manage Exercises</h2>
-    <a href="/admin_add_exercise" class="btn-action btn-approve" style="text-decoration: none;">+ Add Exercise</a>
+    <a href="/admin_add_exercise/" class="btn-action btn-approve" style="text-decoration: none;">+ Add Exercise</a>
 </div>
 
 <div style="overflow-x: auto;">
@@ -43,7 +43,7 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="/admin_edit_exercise?id={{ ex.id }}" class="btn-action btn-unblock">Edit</a>
+                    <a href="/admin_edit_exercise/?id={{ ex.id }}" class="btn-action btn-unblock">Edit</a>
                 </td>
             </tr>
             {% empty %}

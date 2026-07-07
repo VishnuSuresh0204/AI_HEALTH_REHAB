@@ -51,9 +51,9 @@
                 </td>
                 <td>
                     {% if u.loginid.is_active %}
-                        <a href="/admin_user_action?id={{ u.id }}&act=block" class="btn-action btn-block">Block</a>
+                        <a href="/admin_user_action/?id={{ u.id }}&act=block" class="btn-action btn-block">Block</a>
                     {% else %}
-                        <a href="/admin_user_action?id={{ u.id }}&act=unblock" class="btn-action btn-unblock">Unblock</a>
+                        <a href="/admin_user_action/?id={{ u.id }}&act=unblock" class="btn-action btn-unblock">Unblock</a>
                     {% endif %}
                 </td>
             </tr>

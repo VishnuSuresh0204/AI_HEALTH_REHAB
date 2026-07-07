@@ -49,12 +49,12 @@
                 </td>
                 <td>
                     {% if t.status == 'pending' %}
-                        <a href="/admin_therapist_action?id={{ t.id }}&act=approved" class="btn-action btn-approve">Approve</a>
-                        <a href="/admin_therapist_action?id={{ t.id }}&act=rejected" class="btn-action btn-reject" style="margin-left: 0.5rem;">Reject</a>
+                        <a href="/admin_therapist_action/?id={{ t.id }}&act=approved" class="btn-action btn-approve">Approve</a>
+                        <a href="/admin_therapist_action/?id={{ t.id }}&act=rejected" class="btn-action btn-reject" style="margin-left: 0.5rem;">Reject</a>
                     {% elif t.status == 'approved' %}
-                        <a href="/admin_therapist_action?id={{ t.id }}&act=blocked" class="btn-action btn-reject">Block</a>
+                        <a href="/admin_therapist_action/?id={{ t.id }}&act=blocked" class="btn-action btn-reject">Block</a>
                     {% elif t.status == 'blocked' or t.status == 'rejected' %}
-                        <a href="/admin_therapist_action?id={{ t.id }}&act=approved" class="btn-action btn-approve">Approve</a>
+                        <a href="/admin_therapist_action/?id={{ t.id }}&act=approved" class="btn-action btn-approve">Approve</a>
                     {% endif %}
                 </td>
             </tr>

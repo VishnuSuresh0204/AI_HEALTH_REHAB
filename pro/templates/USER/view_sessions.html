@@ -94,7 +94,7 @@
 {% block content %}
 <div class="header-bar">
     <h2>Session History</h2>
-    <a href="/user_view_plans" class="btn-primary">Start New Session</a>
+    <a href="/user_view_plans/" class="btn-primary">Start New Session</a>
 </div>
 
 {% if val %}
@@ -135,9 +135,9 @@
 
         <div>
             {% if s.status == 'in_progress' %}
-                <a href="/user_session_tracker?id={{ s.id }}" class="action-btn">Resume Session</a>
+                <a href="/user_session_tracker/?id={{ s.id }}" class="action-btn">Resume Session</a>
             {% elif s.status == 'completed' %}
-                <a href="/user_download_report?id={{ s.id }}" class="action-btn btn-secondary">Download Report</a>
+                <a href="/user_download_report/?id={{ s.id }}" class="action-btn btn-secondary">Download Report</a>
             {% endif %}
         </div>
     </div>
@@ -146,7 +146,7 @@
     <div class="glass-card" style="text-align: center; padding: 4rem 2rem;">
         <h3 style="color: var(--text-light); margin-bottom: 1rem;">No Sessions Recorded Yet</h3>
         <p style="color: #6b7280; margin-bottom: 2rem;">Head over to your exercise plans to start your first AI-guided therapy session.</p>
-        <a href="/user_view_plans" class="btn-primary">View My Plans</a>
+        <a href="/user_view_plans/" class="btn-primary">View My Plans</a>
     </div>
 {% endif %}
 {% endblock %}

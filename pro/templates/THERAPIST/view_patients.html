@@ -36,7 +36,7 @@
             <td>{{ p.phone }}</td>
             <td>{{ p.condition|default:"N/A" }}</td>
             <td>
-                <a href="/therapist_patient_detail?id={{ p.id }}" class="btn-action btn-approve">View Details</a>
+                <a href="/therapist_patient_detail/?id={{ p.id }}" class="btn-action btn-approve">View Details</a>
             </td>
         </tr>
         {% endfor %}

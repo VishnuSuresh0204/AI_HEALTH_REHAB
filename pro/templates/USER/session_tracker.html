@@ -45,7 +45,7 @@
 
 {% block content %}
 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-    <a href="/user_view_plans" style="color: var(--primary); text-decoration: none; font-weight: 600;">← My Plans</a>
+    <a href="/user_view_plans/" style="color: var(--primary); text-decoration: none; font-weight: 600;">← My Plans</a>
     <span style="color: #d1d5db;">/</span>
     <span style="font-weight: 600;">Live Session</span>
     <span class="status-badge status-{{ session.status }}" style="margin-left: 0.5rem;">
@@ -145,10 +145,10 @@
         {% endif %}
 
         <!-- Actions -->
-        <a href="/user_view_plans" class="action-btn btn-done" style="text-align:center; text-decoration:none; display:block; padding: 0.85rem;">
+        <a href="/user_view_plans/" class="action-btn btn-done" style="text-align:center; text-decoration:none; display:block; padding: 0.85rem;">
             ✅ Finish Session
         </a>
-        <a href="/user_view_plans" class="action-btn btn-stop" style="text-align:center; text-decoration:none; display:block; padding: 0.85rem;">
+        <a href="/user_view_plans/" class="action-btn btn-stop" style="text-align:center; text-decoration:none; display:block; padding: 0.85rem;">
             ⏹ Stop &amp; Discard
         </a>
     </div>

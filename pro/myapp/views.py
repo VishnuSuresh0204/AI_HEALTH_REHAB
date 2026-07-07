@@ -106,8 +106,6 @@ def register_therapist(request):
         return redirect("/login")
     return render(request, "therapist_register.html")
 
-
-
 # ================= ADMIN VIEWS =================
 
 def admin_home(request):
@@ -184,7 +182,15 @@ def admin_edit_exercise(request):
         return redirect("/admin_view_exercises")
     return render(request, "ADMIN/edit_exercise.html", {"ex": ex})
 
+def admin_view_feedback(request):
+    f = Feedback.objects.all().order_by("-created_date")
+    return render(request, "ADMIN/view_feedback.html", {"val": f})
 
+def admin_view_reports(request):
+    c = Complaint.objects.all().order_by("-created_date")
+    return render(request, "ADMIN/view_reports.html", {"val": c})
+
+# ================= THERAPIST VIEWS =================
 
 def therapist_home(request):
     return render(request, "THERAPIST/therapist_home.html")
@@ -217,7 +223,6 @@ def therapist_view_patients(request):
         "active_plans": ExercisePlan.objects.filter(therapist=t, is_active=True).count(),
     }
     return render(request, "THERAPIST/view_patients.html", {"val": p, "stats": stats})
-
 
 def therapist_patient_detail(request):
     id = request.GET.get("id")
@@ -332,10 +337,9 @@ def user_medical_history(request):
     h = MedicalHistory.objects.filter(user=u).order_by("-created_date")
     return render(request, "USER/medical_history.html", {"val": h})
 
-
-
 def user_start_session(request):
     itemid = request.GET.get("itemid")
+
     if request.method == "POST":
         try:
             u = UserProfile.objects.get(loginid_id=request.session["lid"])
@@ -343,9 +347,16 @@ def user_start_session(request):
             messages.error(request, "User profile not found. Please log in as a patient.")
             return redirect("/login")
 
+        itemid = request.POST.get("itemid")
+        video = request.FILES.get("video")
+
         if not itemid:
             messages.error(request, "Invalid exercise selection")
             return redirect("/user_view_plans")
+
+        if not video:
+            messages.error(request, "Please upload a video of yourself performing the exercise")
+            return redirect(f"/user_start_session?itemid={itemid}")
 
         try:
             item = ExercisePlanItem.objects.get(id=itemid)
@@ -353,9 +364,19 @@ def user_start_session(request):
             messages.error(request, "Exercise not found")
             return redirect("/user_view_plans")
 
-        s = ExerciseSession.objects.create(patient=u, plan_item=item)
-        messages.success(request, "Session started")
-        return redirect(f"/user_session_tracker?id={s.id}")
+        s = ExerciseSession.objects.create(patient=u, plan_item=item, recorded_video=video, status="processing")
+
+        try:
+            from .cv_video_analysis import analyze_recorded_video
+            analyze_recorded_video(s)
+        except Exception as e:
+            s.status = "aborted"
+            s.save()
+            messages.error(request, f"Could not analyze the video: {e}")
+            return redirect("/user_view_plans")
+
+        messages.success(request, "Video analyzed. Here's how it went.")
+        return redirect(f"/user_session_result?id={s.id}")
 
     item = None
     if itemid:
@@ -365,89 +386,25 @@ def user_start_session(request):
             pass
     return render(request, "USER/start_session.html", {"itemid": itemid, "item": item})
 
+def user_session_result(request):
+    id = request.GET.get("id")
+    s = ExerciseSession.objects.get(id=id)
+    report = PerformanceReport.objects.filter(session=s).first()
+    frames = PoseFrameLog.objects.filter(session=s).order_by("frame_number")
+    return render(request, "USER/session_result.html", {"session": s, "report": report, "frames": frames})
+
 def user_view_sessions(request):
     auth_check = require_login(request)
     if auth_check: return auth_check
 
     u = UserProfile.objects.get(loginid_id=request.session["lid"])
-    s = ExerciseSession.objects.filter(patient=u).order_by("-started_date")
-    return render(request, "USER/view_sessions.html", {"val": s})
+    sessions = ExerciseSession.objects.filter(patient=u).order_by("-started_date")
 
-def user_session_tracker(request):
-    id = request.GET.get("id")
-    s = ExerciseSession.objects.get(id=id)
-    return render(request, "USER/session_tracker.html", {"session": s})
+    # Annotate each session with feedback status
+    for s in sessions:
+        s.has_feedback = Feedback.objects.filter(user=u, session=s).exists()
 
-def user_submit_frame(request):
-    import json
-    if request.method == "POST":
-        payload = json.loads(request.body)
-        s = ExerciseSession.objects.get(id=payload.get("session_id"), status="in_progress")
-        ex = s.plan_item.exercise
-
-        angle = float(payload.get("joint_angle"))
-        if ex.target_angle_min <= angle <= ex.target_angle_max:
-            accuracy = 100
-        else:
-            deviation = min(abs(angle - ex.target_angle_min), abs(angle - ex.target_angle_max))
-            accuracy = max(0, 100 - deviation)
-
-        if accuracy >= 85:
-            feedback = "Great form, keep going!"
-        elif accuracy >= 60:
-            feedback = "Adjust your posture slightly for better alignment."
-        else:
-            feedback = "Posture off target - slow down and realign with the demo."
-
-        rep_done = payload.get("is_rep_complete", False)
-
-        PoseFrameLog.objects.create(
-            session=s, frame_number=payload.get("frame_number"), timestamp_ms=payload.get("timestamp_ms"),
-            joint_angle=angle, posture_accuracy=accuracy, is_rep_complete=rep_done,
-            landmarks_json=json.dumps(payload.get("landmarks", {}))
-        )
-
-        if rep_done:
-            s.completed_reps += 1
-            s.save()
-
-        from django.http import JsonResponse
-        return JsonResponse({"status": "ok", "posture_accuracy": accuracy, "feedback": feedback, "reps": s.completed_reps})
-
-    from django.http import JsonResponse
-    return JsonResponse({"status": "invalid request"})
-
-def user_complete_session(request):
-    from django.utils import timezone
-    from django.http import JsonResponse
-
-    id = request.POST.get("id")
-    s = ExerciseSession.objects.get(id=id)
-    frames = PoseFrameLog.objects.filter(session=s)
-
-    avg = 0
-    if frames.exists():
-        avg = round(sum(f.posture_accuracy for f in frames) / frames.count(), 2)
-
-    s.status = "completed"
-    s.ended_date = timezone.now()
-    s.avg_accuracy = avg
-    s.completed_sets = request.POST.get("completed_sets") or s.completed_sets
-    s.duration_seconds = int((s.ended_date - s.started_date).total_seconds())
-    s.save()
-
-    PerformanceReport.objects.get_or_create(
-        session=s,
-        defaults={
-            "overall_score": avg,
-            "repetition_accuracy": avg,
-            "posture_feedback": "Great form, keep going!" if avg >= 85 else "Adjust your posture slightly for better alignment.",
-            "flagged_for_review": avg < 60,
-        }
-    )
-    messages.success(request, "Session completed")
-    return redirect("/user_view_sessions")
-
+    return render(request, "USER/view_sessions.html", {"val": sessions})
 
 def user_download_report(request):
     id = request.GET.get("id")  # session id
@@ -457,3 +414,128 @@ def user_download_report(request):
     messages.error(request, "Report not available yet")
     return redirect("/user_view_sessions")
 
+def user_add_feedback(request):
+    try:
+        u = UserProfile.objects.get(loginid_id=request.session["lid"])
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile not found")
+        return redirect("/login")
+
+    session_id = request.GET.get("session_id")
+    if not session_id:
+        messages.error(request, "No session specified")
+        return redirect("/user_view_sessions")
+
+    try:
+        session = ExerciseSession.objects.get(id=session_id, patient=u)
+    except ExerciseSession.DoesNotExist:
+        messages.error(request, "Session not found")
+        return redirect("/user_view_sessions")
+
+    if session.status != "completed":
+        messages.error(request, "Feedback can only be provided after the session is completed.")
+        return redirect("/user_view_sessions")
+
+    existing = Feedback.objects.filter(user=u, session=session).first()
+    if existing:
+        messages.info(request, "You already submitted feedback for this session. You can edit it.")
+        return redirect(f"/user_edit_feedback/?id={existing.id}")
+
+    if request.method == "POST":
+        msg = request.POST.get("message")
+        rt = request.POST.get("rating")
+        Feedback.objects.create(user=u, session=session, message=msg, rating=rt)
+        messages.success(request, "Feedback submitted successfully!")
+        return redirect("/user_view_sessions")
+
+    return render(request, "USER/add_feedback.html", {"session": session})
+
+def user_edit_feedback(request):
+    try:
+        u = UserProfile.objects.get(loginid_id=request.session["lid"])
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile not found")
+        return redirect("/login")
+
+    feedback_id = request.GET.get("id")
+    try:
+        feedback = Feedback.objects.get(id=feedback_id, user=u)
+    except Feedback.DoesNotExist:
+        messages.error(request, "Feedback not found")
+        return redirect("/user_view_feedback")
+
+    if request.method == "POST":
+        feedback.message = request.POST.get("message")
+        feedback.rating = request.POST.get("rating")
+        feedback.save()
+        messages.success(request, "Feedback updated successfully!")
+        return redirect("/user_view_feedback")
+
+    return render(request, "USER/edit_feedback.html", {"feedback": feedback})
+
+def user_delete_feedback(request):
+    try:
+        u = UserProfile.objects.get(loginid_id=request.session["lid"])
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile not found")
+        return redirect("/login")
+
+    feedback_id = request.GET.get("id")
+    try:
+        feedback = Feedback.objects.get(id=feedback_id, user=u)
+        feedback.delete()
+        messages.success(request, "Feedback deleted successfully!")
+    except Feedback.DoesNotExist:
+        messages.error(request, "Feedback not found")
+
+    return redirect("/user_view_feedback")
+
+def user_view_feedback(request):
+    try:
+        u = UserProfile.objects.get(loginid_id=request.session["lid"])
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile not found")
+        return redirect("/login")
+    f = Feedback.objects.filter(user=u).order_by("-created_date")
+    return render(request, "USER/view_feedback.html", {"val": f})
+
+def user_add_complaint(request):
+    try:
+        u = UserProfile.objects.get(loginid_id=request.session["lid"])
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile not found")
+        return redirect("/login")
+
+    session_id = request.GET.get("session_id")
+    session = None
+    if session_id:
+        try:
+            session = ExerciseSession.objects.get(id=session_id, patient=u, status="completed")
+        except ExerciseSession.DoesNotExist:
+            messages.error(request, "Invalid session reference.")
+            return redirect("/user_view_sessions")
+    else:
+        has_session = ExerciseSession.objects.filter(patient=u, status="completed").exists()
+        if not has_session:
+            messages.error(request, "Complaints can only be filed after completing a session.")
+            return redirect("/user_home")
+
+    if request.method == "POST":
+        sub = request.POST.get("subject")
+        msg = request.POST.get("message")
+        Complaint.objects.create(user=u, session=session, subject=sub, message=msg)
+        messages.success(request, "Report/Complaint filed")
+        return redirect("/user_view_sessions")
+    return render(request, "USER/add_complaint.html", {"session": session})
+
+def user_view_complaints(request):
+    auth_check = require_login(request)
+    if auth_check: return auth_check
+
+    try:
+        u = UserProfile.objects.get(loginid_id=request.session["lid"])
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile not found")
+        return redirect("/login")
+    c = Complaint.objects.filter(user=u).order_by("-created_date")
+    return render(request, "USER/view_reports.html", {"val": c})

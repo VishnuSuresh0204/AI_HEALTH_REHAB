@@ -37,7 +37,7 @@
 
 {% block content %}
 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-    <a href="/user_view_plans" style="color: var(--primary); text-decoration: none; font-weight: 600;">← Back to My Plans</a>
+    <a href="/user_view_plans/" style="color: var(--primary); text-decoration: none; font-weight: 600;">← Back to My Plans</a>
 </div>
 
 <h2 style="margin: 0 0 1.5rem;">Start Exercise Session</h2>
@@ -92,7 +92,7 @@
 
     <!-- Confirm & Start -->
     <div class="confirm-form">
-        <form method="POST" action="/user_start_session?itemid={{ itemid }}">
+        <form method="POST" action="/user_start_session/?itemid={{ itemid }}">
             {% csrf_token %}
             <button type="submit" class="start-btn">🎬 Start Session Now</button>
         </form>
@@ -105,7 +105,7 @@
     <div style="text-align: center; padding: 3rem; color: var(--text-light);">
         <p style="font-size: 2.5rem; margin-bottom: 0.5rem;">❌</p>
         <p>Exercise not found. Please go back to your plans and try again.</p>
-        <a href="/user_view_plans" style="color: var(--primary); font-weight: 600;">Go to My Plans</a>
+        <a href="/user_view_plans/" style="color: var(--primary); font-weight: 600;">Go to My Plans</a>
     </div>
 {% endif %}
 {% endblock %}

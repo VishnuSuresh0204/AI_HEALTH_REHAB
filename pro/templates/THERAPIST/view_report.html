@@ -55,7 +55,7 @@
 {% block content %}
 <div class="report-header">
     <h2>Detailed Session Report</h2>
-    <a href="/therapist_view_sessions" class="btn-primary" style="background: #6b7280;">&larr; Back to Sessions</a>
+    <a href="/therapist_view_sessions/" class="btn-primary" style="background: #6b7280;">&larr; Back to Sessions</a>
 </div>
 
 {% for r in val %}
@@ -67,9 +67,9 @@
 
 <div class="action-bar">
     {% if r.flagged_for_review %}
-    <a href="/therapist_review_report?id={{ r.id }}&act=reviewed" class="btn-primary" style="background: #10b981;">Mark as Reviewed</a>
+    <a href="/therapist_review_report/?id={{ r.id }}&act=reviewed" class="btn-primary" style="background: #10b981;">Mark as Reviewed</a>
     {% else %}
-    <a href="/therapist_review_report?id={{ r.id }}&act=flagged" class="btn-primary" style="background: #ef4444;">Flag for Review</a>
+    <a href="/therapist_review_report/?id={{ r.id }}&act=flagged" class="btn-primary" style="background: #ef4444;">Flag for Review</a>
     {% endif %}
 </div>
 {% empty %}
